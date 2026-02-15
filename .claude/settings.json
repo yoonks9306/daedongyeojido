@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Write",
+      "Edit",
+      "NotebookEdit",
+      "Bash(npm *)",
+      "Bash(npx *)",
+      "Bash(git *)",
+      "Bash(node *)",
+      "Bash(mkdir *)",
+      "Bash(ls *)"
+    ]
+  }
+}
