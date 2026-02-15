@@ -12,6 +12,11 @@ type RatesResponse = {
 };
 
 const CURRENCIES: Currency[] = ['USD', 'JPY', 'CNY'];
+const FLAG_BY_CURRENCY: Record<Currency, string> = {
+  USD: '🇺🇸',
+  JPY: '🇯🇵',
+  CNY: '🇨🇳',
+};
 
 export default function ExchangeRateWidget() {
   const [currency, setCurrency] = useState<Currency>('USD');
@@ -39,7 +44,7 @@ export default function ExchangeRateWidget() {
   }, []);
 
   const converted = useMemo(() => {
-    const numeric = Number.parseFloat(amount);
+    const numeric = Number.parseFloat(amount.replace(/,/g, ''));
     if (!data || !Number.isFinite(numeric)) return null;
     return numeric * data.rates[currency];
   }, [amount, currency, data]);
@@ -62,7 +67,10 @@ export default function ExchangeRateWidget() {
       <div className={styles.rateCards}>
         {CURRENCIES.map((code) => (
           <div key={code} className={styles.rateCard}>
-            <p className={styles.rateCode}>{code}</p>
+            <p className={styles.rateCode}>
+              <span className={styles.rateFlag}>{FLAG_BY_CURRENCY[code]}</span>
+              <span>{code}</span>
+            </p>
             <p className={styles.rateValue}>₩{data.rates[code].toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
             <p className={styles.rateHint}>for 1 {code}</p>
           </div>
@@ -71,9 +79,8 @@ export default function ExchangeRateWidget() {
 
       <div className={styles.rateCalculator}>
         <input
-          type="number"
-          min="0"
-          step="0.01"
+          type="text"
+          inputMode="decimal"
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
           className={styles.rateInput}
@@ -85,7 +92,7 @@ export default function ExchangeRateWidget() {
         >
           {CURRENCIES.map((code) => (
             <option key={code} value={code}>
-              {code}
+              {FLAG_BY_CURRENCY[code]} {code}
             </option>
           ))}
         </select>

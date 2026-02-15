@@ -141,3 +141,9 @@
 - Added exchange-rate API proxy route: `GET /api/v1/exchange-rates`
 - Updated shared guide types to align with the new structure
 - Build verified after changes: 37 routes generated, TypeScript pass
+
+## 2026-02-16 — Codex (GPT-5) — UI tweak: exchange widget input/flags
+
+- Changed exchange amount input from numeric spinner to plain text input (`inputMode="decimal"`)
+- Added flag indicators for USD/JPY/CNY in rate cards and dropdown options
+- Build verified after changes: 37 routes generated, TypeScript pass
