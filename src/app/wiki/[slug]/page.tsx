@@ -35,7 +35,30 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     .eq('slug', slug)
     .single();
   if (!data) return { title: 'Not Found' };
-  return { title: data.title, description: data.summary };
+  return {
+    title: data.title,
+    description: data.summary,
+    openGraph: {
+      title: data.title,
+      description: data.summary,
+      type: 'article',
+      url: `/wiki/${slug}`,
+      images: [
+        {
+          url: `/wiki/${slug}/opengraph-image`,
+          width: 1200,
+          height: 630,
+          alt: data.title,
+        },
+      ],
+    },
+    twitter: {
+      card: 'summary_large_image',
+      title: data.title,
+      description: data.summary,
+      images: [`/wiki/${slug}/opengraph-image`],
+    },
+  };
 }
 
 export default async function WikiArticlePage({ params }: Props) {

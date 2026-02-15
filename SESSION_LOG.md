@@ -121,3 +121,13 @@
 
 - Fixed global visited-link behavior to keep brand link color consistent (no purple visited state)
 - Updated `src/app/globals.css`: `a:visited` now uses `var(--color-text-link)`
+
+## 2026-02-16 — Codex (GPT-5) — Phase 4: SEO foundation
+
+- Added `src/app/sitemap.ts` with static + wiki + community detail URLs
+- Added `src/app/robots.ts` with host and sitemap settings
+- Added base social preview image route: `src/app/opengraph-image.tsx`
+- Added wiki per-article OG image route: `src/app/wiki/[slug]/opengraph-image.tsx`
+- Updated root metadata (`layout.tsx`) with metadataBase, Open Graph/Twitter config, and Korean SEO keywords
+- Updated wiki article metadata to include per-article OG/Twitter image
+- Build verified after changes: 36 routes generated, TypeScript pass

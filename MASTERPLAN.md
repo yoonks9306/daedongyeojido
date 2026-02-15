@@ -10,24 +10,23 @@
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **Phase 3 backend completion (code)**: auth + ranking + community/wiki flows complete
-  - Added Email/Password auth: `Credentials` provider + `POST /api/v1/auth/register`
-  - Added local auth storage (`local_auth_users`) + password hashing flow
-  - Upgraded Best tab ranking to `score = upvotes × recency_weight`
-  - Community features done: create post, vote persistence, detail page, comments API/UI
-  - Wiki features done: authenticated create/edit pages + API
-  - Build verified after changes: 33 routes generated, TypeScript pass
+- **Phase 4 (SEO 1st pass)**: crawl/share fundamentals implemented
+  - Added `src/app/sitemap.ts` and `src/app/robots.ts`
+  - Added site OG image (`/opengraph-image`) and wiki per-article OG image (`/wiki/[slug]/opengraph-image`)
+  - Added page-level Open Graph/Twitter metadata for wiki articles
+  - Added Korean metadata keywords in root layout
+  - Build verified after changes: 36 routes generated, TypeScript pass
 
 ### Currently blocked on
 - No active blocker reported in this session.
 - User confirmed Supabase migrations applied (`user_identities`, `local_auth_users`) and Vercel env vars already configured.
 
 ### Next task for incoming agent
-**Post-Phase 3 stabilization / Phase 4 handoff:**
-1. Apply DB migrations in Supabase and run smoke tests (OAuth + credentials + post/vote/comment)
-2. Optional hardening: ownership/role guard for wiki edit API
-3. Optional hardening: initial voted-state preload on community list
-4. Start Phase 4 SEO (`sitemap.ts`, `robots.ts`, OG image)
+**Phase 4 continued:**
+1. Expand wiki content (toward 100+ articles)
+2. Expand guide sections and practical travel checklists
+3. Optional hardening: ownership/role guard for wiki edit API
+4. Optional hardening: initial voted-state preload on community list
 
 ### Recent git commits
 - `60ae5ce` feat: Phase 3 — Supabase database integration
@@ -222,13 +221,13 @@ Defined in `src/app/globals.css`.
 - [x] Email/password auth (Credentials + local_auth_users)
 
 ### Phase 4 — Content & SEO 🟡 PARTIAL
-- [ ] `sitemap.ts` (Next.js built-in)
-- [ ] `robots.ts`
-- [ ] `opengraph-image` per wiki article
+- [x] `sitemap.ts` (Next.js built-in)
+- [x] `robots.ts`
+- [x] `opengraph-image` per wiki article
 - [ ] Expand wiki articles (target: 100+)
 - [ ] Expand guide sections
 - [x] Internal hyperlinks between wiki articles
-- [ ] Korean-language metadata for SEO
+- [x] Korean-language metadata for SEO
 
 ### Phase 5 — Monetization 🔴 NOT STARTED
 - [x] Ad slot placeholders (leaderboard 728×90, rectangle 300×250)
