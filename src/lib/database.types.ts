@@ -50,6 +50,27 @@ export interface Database {
         Insert: Omit<Database['public']['Tables']['votes']['Row'], 'id' | 'created_at'>;
         Update: Partial<Database['public']['Tables']['votes']['Insert']>;
       };
+      user_identities: {
+        Row: {
+          nextauth_subject: string;
+          email: string;
+          supabase_user_id: string;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['user_identities']['Row'], 'created_at'>;
+        Update: Partial<Database['public']['Tables']['user_identities']['Insert']>;
+      };
+      local_auth_users: {
+        Row: {
+          id: string;
+          email: string;
+          username: string;
+          password_hash: string;
+          created_at: string;
+        };
+        Insert: Omit<Database['public']['Tables']['local_auth_users']['Row'], 'id' | 'created_at'>;
+        Update: Partial<Database['public']['Tables']['local_auth_users']['Insert']>;
+      };
       comments: {
         Row: {
           id: number;

@@ -38,6 +38,11 @@ export default function WikiArticle({ article, allArticles }: WikiArticleProps) 
             </span>
           </div>
           <h1 className={styles.articleTitle}>{article.title}</h1>
+          <div style={{ marginBottom: 'var(--spacing-3)' }}>
+            <Link href={`/wiki/${article.slug}/edit`} className={styles.relatedLink}>
+              Edit Article
+            </Link>
+          </div>
           <div className={styles.articleMeta}>
             <span>
               Last updated:{' '}

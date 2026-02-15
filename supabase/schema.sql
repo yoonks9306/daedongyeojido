@@ -43,6 +43,23 @@ create table if not exists votes (
   unique(user_id, post_id)
 );
 
+-- NextAuth -> Supabase Auth identity mapping
+create table if not exists user_identities (
+  nextauth_subject text primary key,
+  email text not null,
+  supabase_user_id uuid not null references auth.users(id) on delete cascade,
+  created_at timestamptz default now() not null
+);
+
+-- Local email/password accounts for NextAuth Credentials provider
+create table if not exists local_auth_users (
+  id uuid primary key default gen_random_uuid(),
+  email text unique not null,
+  username text not null,
+  password_hash text not null,
+  created_at timestamptz default now() not null
+);
+
 -- Comments
 create table if not exists comments (
   id bigint generated always as identity primary key,
@@ -79,6 +96,8 @@ create trigger comments_updated_at
 alter table wiki_articles enable row level security;
 alter table community_posts enable row level security;
 alter table votes enable row level security;
+alter table user_identities enable row level security;
+alter table local_auth_users enable row level security;
 alter table comments enable row level security;
 
 -- Public read access

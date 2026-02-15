@@ -10,25 +10,24 @@
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **Phase 3 Database (partial)**: Supabase connected, schema live, data seeded, pages wired
-  - Supabase project: `jjdtxdsurkcuxwauusfc` — schema deployed, RLS enabled
-  - 20 wiki articles + 15 community posts seeded from static data
-  - `wiki/page`, `wiki/[slug]`, `community/page` all fetch from Supabase (SSG preserved)
-  - Server Component → Client Component pattern for wiki + community pages
-  - `.env.local` has all Supabase env vars; Vercel integration syncs to production
+- **Phase 3 backend completion (code)**: auth + ranking + community/wiki flows complete
+  - Added Email/Password auth: `Credentials` provider + `POST /api/v1/auth/register`
+  - Added local auth storage (`local_auth_users`) + password hashing flow
+  - Upgraded Best tab ranking to `score = upvotes × recency_weight`
+  - Community features done: create post, vote persistence, detail page, comments API/UI
+  - Wiki features done: authenticated create/edit pages + API
+  - Build verified after changes: 33 routes generated, TypeScript pass
 
 ### Currently blocked on
-- **Vercel production env vars**: Supabase Vercel integration set Production=ON, Development=ON
-  - Need to confirm `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are in Vercel dashboard
-- **`SUPABASE_SERVICE_ROLE_KEY`**: NOT in Vercel — only needed for seed script (never expose to client)
+- No active blocker reported in this session.
+- User confirmed Supabase migrations applied (`user_identities`, `local_auth_users`) and Vercel env vars already configured.
 
 ### Next task for incoming agent
-**Phase 3 continued — Backend features:**
-1. Community post submission form + `/api/v1/community/posts` POST endpoint (auth required)
-2. Upvote persistence: `/api/v1/community/posts/[id]/vote` POST/DELETE, update `votes` table
-3. Protected routes: redirect unauthenticated users away from post-creation
-4. Wiki article edit form (authenticated users only)
-5. Comment system on community posts
+**Post-Phase 3 stabilization / Phase 4 handoff:**
+1. Apply DB migrations in Supabase and run smoke tests (OAuth + credentials + post/vote/comment)
+2. Optional hardening: ownership/role guard for wiki edit API
+3. Optional hardening: initial voted-state preload on community list
+4. Start Phase 4 SEO (`sitemap.ts`, `robots.ts`, OG image)
 
 ### Recent git commits
 - `60ae5ce` feat: Phase 3 — Supabase database integration
@@ -92,9 +91,9 @@ Brand voice: helpful, dense, insider-knowledge-forward. Not a tourist brochure �
 |-------|--------|-------|
 | Framework | Next.js 16 (App Router) | TypeScript, `src/` dir, `@/*` alias |
 | Styling | Custom CSS Modules | No Tailwind. CSS custom properties for theming |
-| Auth | NextAuth.js v5 (Auth.js) | Google + GitHub OAuth — credentials pending |
-| Data (MVP) | Static `.ts` files | No DB yet — swap in Phase 3 |
-| Database | Not yet implemented | Planned: Supabase (recommended for Vercel) |
+| Auth | NextAuth.js v5 (Auth.js) | Google + GitHub OAuth + Credentials (email/password) |
+| Data | Supabase + seed data | Static `.ts` used as seed source, runtime reads DB |
+| Database | Supabase | Project `jjdtxdsurkcuxwauusfc` live |
 | Hosting | Vercel | Connected to GitHub `main` branch, auto-deploy |
 | Ads | Placeholder slots | Planned: Google AdSense |
 | Node | v25.6.1 at `/opt/homebrew/bin` | Requires `export PATH="/opt/homebrew/bin:$PATH"` |
@@ -205,22 +204,22 @@ Defined in `src/app/globals.css`.
 - [x] Session-aware Navigation (avatar when logged in, click to sign out)
 - [x] Fill OAuth credentials in `.env.local` (GitHub OAuth verified locally)
 - [x] Add env vars to Vercel dashboard + configure production callback URL (verified working)
-- [ ] Protected routes: community posting, wiki editing
+- [x] Protected routes: community posting, wiki editing
 - [ ] User profile page (`/profile/[username]`) — Phase 3 dependency
 
-### Phase 3 — Database & Backend 🟡 IN PROGRESS
+### Phase 3 — Database & Backend ✅ COMPLETE
 - [x] Choose DB: **Supabase** (Vercel integration active)
 - [x] Schema: wiki_articles, community_posts, votes, comments (RLS enabled)
 - [x] Migrate static data files → DB seed scripts (`supabase/seed.ts`, 20 articles + 15 posts)
 - [x] `src/lib/supabase.ts` client created
 - [x] wiki + community pages fetch from Supabase (SSG preserved)
-- [ ] API routes: `/api/v1/community/` POST (new post), `/api/v1/community/[id]/vote`
-- [ ] Community post submission form + POST endpoint
-- [ ] Upvote persistence (currently UI-only, no backend)
-- [ ] Best posts algorithm (score = upvotes × recency_weight) — recency filter done client-side
-- [ ] Wiki article create/edit form (for authenticated users)
-- [ ] Comment system
-- [ ] Email/password auth (requires User table in DB)
+- [x] API routes: `/api/v1/community/` POST (new post), `/api/v1/community/[id]/vote`
+- [x] Community post submission form + POST endpoint
+- [x] Upvote persistence (POST/DELETE vote API + UI wiring)
+- [x] Best posts algorithm (score = upvotes × recency_weight)
+- [x] Wiki article create/edit form (for authenticated users)
+- [x] Comment system
+- [x] Email/password auth (Credentials + local_auth_users)
 
 ### Phase 4 — Content & SEO 🟡 PARTIAL
 - [ ] `sitemap.ts` (Next.js built-in)
@@ -258,12 +257,12 @@ Defined in `src/app/globals.css`.
 
 | # | Issue | Status | Notes |
 |---|-------|--------|-------|
-| 1 | OAuth credentials not filled | Blocked | `.env.local` needs AUTH_SECRET, Google, GitHub credentials |
-| 2 | No DB | Open | All data is static `.ts` files. Votes, posts, edits not persisted |
-| 3 | Community upvote is UI-only | Open | State is local, resets on refresh. Needs Phase 3 |
+| 1 | OAuth credentials not filled | Mostly resolved | Local + production OAuth works; keep Vercel envs synced |
+| 2 | No DB | Resolved | Supabase is live and pages read from DB |
+| 3 | Community upvote is UI-only | Resolved | Vote API + DB persistence implemented (`/api/v1/community/posts/[id]/vote`) |
 | 4 | Mobile: no hamburger nav | Open | Tabs shrink but no dedicated mobile nav pattern |
-| 5 | Best post algorithm is client-side sort | Open | Needs recency weighting + DB |
-| 6 | Email/password login disabled | By design | Stubbed until DB is ready (Phase 3) |
+| 5 | Best post algorithm is client-side sort | Resolved | Score-based ranking (`upvotes × recency_weight`) implemented |
+| 6 | Email/password login disabled | Resolved | Credentials auth + register API implemented |
 
 ---
 

@@ -34,7 +34,26 @@ function WikiIndex({ articles }: { articles: WikiArticle[] }) {
 
   return (
     <div style={{ maxWidth: 'var(--content-max-width)', margin: '0 auto', padding: '24px var(--spacing-6)' }}>
-      <h1 style={{ marginBottom: '8px' }}>Wiki</h1>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
+        <h1 style={{ marginBottom: 0 }}>Wiki</h1>
+        <Link
+          href="/wiki/new"
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            padding: '8px 12px',
+            borderRadius: 'var(--border-radius-md)',
+            background: 'var(--color-accent)',
+            color: '#fff',
+            textDecoration: 'none',
+            fontSize: 'var(--font-size-sm)',
+            fontWeight: 500,
+          }}
+        >
+          Write Article
+        </Link>
+      </div>
       <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px', fontSize: 'var(--font-size-md)' }}>
         Detailed articles on everything Korea — transport, apps, culture, food, and places.
       </p>

@@ -7,14 +7,41 @@
   padding-top: var(--spacing-6);
 }
 
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-2);
+}
+
 .pageTitle {
   font-size: var(--font-size-2xl);
   font-weight: var(--font-weight-bold);
-  margin-bottom: var(--spacing-4);
   display: flex;
   align-items: baseline;
   gap: var(--spacing-3);
   flex-wrap: wrap;
+}
+
+.writeBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 12px;
+  border: 1px solid var(--color-accent);
+  border-radius: var(--border-radius-md);
+  background: var(--color-accent);
+  color: #fff;
+  text-decoration: none;
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.voteError {
+  color: var(--color-accent);
+  font-size: var(--font-size-sm);
+  margin-bottom: var(--spacing-3);
 }
 
 /* ---- Best tabs ---- */
@@ -94,6 +121,15 @@
   color: var(--color-accent);
   border-color: var(--color-accent);
 }
+.voteBtnActive {
+  background: color-mix(in srgb, var(--color-accent), transparent 85%);
+  color: var(--color-accent);
+  border-color: var(--color-accent);
+}
+.voteBtn:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
 
 .voteCount {
   font-size: var(--font-size-sm);
@@ -107,6 +143,7 @@
 .postContent { min-width: 0; }
 
 .postTitle {
+  display: inline-block;
   font-size: var(--font-size-base);
   font-weight: var(--font-weight-medium);
   color: var(--color-text-primary);
@@ -115,6 +152,7 @@
   overflow: hidden;
   text-overflow: ellipsis;
   cursor: pointer;
+  text-decoration: none;
 }
 .postTitle:hover { color: var(--color-accent); }
 
@@ -162,6 +200,7 @@
 /* ---- Mobile ---- */
 @media (max-width: 768px) {
   .communityPage { padding-inline: var(--spacing-4); }
+  .titleRow { align-items: flex-start; }
   .postItem { grid-template-columns: 40px 1fr; }
   .statsCol { display: none; }
 }

@@ -69,3 +69,50 @@
 - `community/page.tsx` + `CommunityClient.tsx`: server component fetches, client handles tabs
 - Best post algorithm: recency window filter client-side (daily=24h, weekly=7d, monthly=30d)
 - Build: 27 static pages, 0 TypeScript errors — `60ae5ce`
+
+## 2026-02-16 — Codex (GPT-5) — Phase 3: Community write/vote backend
+
+- Added `POST /api/v1/community/posts` route with auth guard and Supabase insert
+- Added `POST/DELETE /api/v1/community/posts/[id]/vote` route and upvote count sync to `community_posts.upvotes`
+- Added `/community/new` page + `NewCommunityPostForm.tsx` (authenticated-only, redirect to login when unauthenticated)
+- Updated `CommunityClient.tsx` vote button to call vote API and added `Write Post` entry point
+- Added `src/lib/supabase-admin.ts` and `src/lib/community-auth-user.ts` for server-side writes
+- Extended `supabase/schema.sql` with `user_identities` mapping table (NextAuth user → Supabase Auth user bridge)
+- Build verified after changes: 29 routes generated, TypeScript pass
+
+## 2026-02-16 — Codex (GPT-5) — Phase 3: Wiki create/edit flow
+
+- Added `POST /api/v1/wiki/articles` and `PATCH /api/v1/wiki/articles/[slug]` (auth required)
+- Added protected routes `/wiki/new` and `/wiki/[slug]/edit`
+- Added reusable `src/app/wiki/WikiEditorForm.tsx` + `wiki-editor.module.css`
+- Added helper `src/lib/wiki-utils.ts` (category validation + slugify)
+- Added UI entry points: `Write Article` on wiki index and `Edit Article` on wiki detail
+- Build verified after changes: 31 routes generated, TypeScript pass
+
+## 2026-02-16 — Codex (GPT-5) — Phase 3: Community comments
+
+- Added `/community/[id]` detail page with full post content and comment section
+- Added `GET/POST /api/v1/community/posts/[id]/comments` routes
+- Comment submission requires login; unauthenticated users are redirected to login with callback
+- Synced `community_posts.comment_count` after each comment insert
+- Updated community list: post title now links to detail page
+- Build verified after changes: 32 routes generated, TypeScript pass
+
+## 2026-02-16 — Codex (GPT-5) — Phase 3: Best ranking + credentials auth
+
+- Added Credentials auth path in NextAuth (`src/auth.ts`) alongside Google/GitHub OAuth
+- Added email/password register API: `POST /api/v1/auth/register`
+- Added local account storage + hashing (`local_auth_users`, `src/lib/password.ts`, `src/lib/local-auth-users.ts`)
+- Updated `/login` page to support real sign-up/sign-in with callback URL handling
+- Upgraded community Best ranking to score-based sort (`upvotes × recency_weight`)
+- Added DB migration `supabase/migrations/2026-02-16-local-auth-users.sql`
+- Updated `MASTERPLAN.md` tech stack + Phase 3 tracker to match code state
+- Build verified after changes: 33 routes generated, TypeScript pass
+
+## 2026-02-16 — Codex (GPT-5) — Ops sync note
+
+- User confirmed manual DB apply completed in Supabase SQL Editor:
+  - `2026-02-16-user-identities.sql`
+  - `2026-02-16-local-auth-users.sql`
+  - full `supabase/schema.sql`
+- User confirmed Vercel environment variables already configured with Claude Code.

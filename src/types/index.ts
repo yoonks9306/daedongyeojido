@@ -36,3 +36,11 @@ export interface CommunityPost {
   createdAt: string;
   tags: string[];
 }
+
+export interface CommunityComment {
+  id: number;
+  postId: number;
+  author: string;
+  content: string;
+  createdAt: string;
+}
