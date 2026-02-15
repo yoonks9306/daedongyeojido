@@ -1,6 +1,6 @@
 # 대동여지도 — AI Agent Instructions
 
-> **Project tracker**: See `PROJECT.md` for milestones, status, and current tasks.
+> **Project tracker**: See `MASTERPLAN.md` for milestones, status, and current tasks.
 > This file contains coding conventions and architecture rules for AI agents.
 
 ---
@@ -78,8 +78,8 @@ Expected output: 26 static pages, 0 TypeScript errors.
 
 ## File Reading Order (new agent onboarding)
 
-1. `PROJECT.md` — current status and what to work on
-2. `CLAUDE.md` — this file (conventions)
+1. `MASTERPLAN.md` — current status and what to work on
+2. `AGENT_INSTRUCTION.md` — this file (conventions)
 3. `frontend/src/app/globals.css` — design tokens
 4. The specific file(s) you're about to edit
 

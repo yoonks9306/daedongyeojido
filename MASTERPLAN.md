@@ -76,8 +76,8 @@ daedongyeojido/             ← git 루트 = Next.js 앱 루트
 ├── next.config.ts
 ├── tsconfig.json
 ├── .gitignore
-├── PROJECT.md              ← YOU ARE HERE — central tracker
-├── CLAUDE.md               ← AI agent coding instructions
+├── MASTERPLAN.md           ← YOU ARE HERE — central tracker
+├── AGENT_INSTRUCTION.md    ← AI agent coding instructions
 ├── docs/
 │   └── decisions/          ← Architecture Decision Records (ADR)
 └── .claude/
@@ -204,8 +204,8 @@ Defined in `frontend/src/app/globals.css`.
 > For Claude, Gemini, Codex, or any AI picking up this project:
 
 ### How to get context fast
-1. Read `PROJECT.md` (this file) — current state
-2. Read `CLAUDE.md` — coding conventions and architecture rules
+1. Read `MASTERPLAN.md` (this file) — current state
+2. Read `AGENT_INSTRUCTION.md` — coding conventions and architecture rules
 3. Read `frontend/src/app/globals.css` — design tokens
 4. Read the relevant component/page file before editing it
 
