@@ -10,32 +10,34 @@
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **Phase 4 (Guide IA + UX expansion)**: docs-style Guide redesign and money widget
-  - Rebuilt Guide into 8 top categories (`Start Here` -> `Work & Study`) with expanded field-friction content
-  - Implemented Claude-docs style layout: top tabs + left category nav + right "On this page"
-  - Added real-time Money rate widget (USD/JPY/CNY + currency dropdown) via `/api/v1/exchange-rates`
-  - Refactored guide data model to tab/group/entry structure for large-scale content growth
-- **Phase 4 (Wiki expansion batch 1)**
-  - Added idempotent migration `supabase/migrations/2026-02-16-wiki-expansion-batch-1.sql`
-  - Added 18 practical wiki articles (foreign visitor pain-point focused) with infobox, tags, related links, and references sections
-  - Updated `supabase/DB_APPLY_CHECKLIST.md` with apply order + verification query
+- **UX polish & live data session** (`d3122ec`):
+  - Google OAuth verified (local + Vercel production)
+  - Profile dropdown menu (user info, theme toggle, sign out)
+  - Community: live view/comment counts (force-dynamic + Supabase aggregate joins)
+  - Community: anonymous posting, admin delete, SVG icons, fully clickable post items
+  - Wiki: scroll-based TOC tracking, actual `updated_at` timestamps
+  - Exchange rate API switched to open.er-api.com (KRW support)
+  - `increment_views` RPC function added
 
 ### Currently blocked on
-- No code blocker. Pending manual DB apply for `2026-02-16-wiki-expansion-batch-1.sql` in Supabase SQL Editor to make new wiki docs visible.
+- Nothing. All code changes committed and pushed.
 
 ### Next task for incoming agent
-**Phase 4 continued:**
-1. Apply wiki expansion migration on Supabase and verify 18 rows inserted
-2. Expand wiki content batch 2 (another 20-30 documents)
-3. Expand guide sections and practical travel checklists (city-specific and scenario packs)
-4. Optional hardening: ownership/role guard for wiki edit API
-5. Optional hardening: initial voted-state preload on community list
+**Phase 5 (Monetization):**
+1. Google AdSense account setup
+2. Replace ad placeholder divs with real AdSense `<Script>` code
+3. Verify ads render on production
+
+**Or Phase 4 continued (content expansion):**
+1. Expand wiki articles toward 100+ target (currently ~38)
+2. Expand guide sections with city-specific and scenario packs
 
 ### Recent git commits
-- `60ae5ce` feat: Phase 3 — Supabase database integration
-- `ff29583` chore: Phase 2 complete — production OAuth verified
-- `49ab0d9` chore: update MASTERPLAN + SESSION_LOG — Phase 2 local OAuth verified
-- `6306655` docs: add SESSION_LOG.md and fix stale path in AGENT_INSTRUCTION.md
+- `d3122ec` fix: polish community UX, live data, nav dropdown, and misc bug fixes
+- `80b8e07` feat: add phase 4 wiki expansion batch 1
+- `2c68e9c` feat: split guide nav roles and enrich domain content
+- `20c051d` feat: redesign guide IA and add live money widget
+- `b3b1b2f` feat: add phase 4 seo foundation
 
 ---
 

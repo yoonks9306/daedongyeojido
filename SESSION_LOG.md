@@ -164,3 +164,18 @@
 - Each new article includes infobox, structured section headings, related article links, tags, and references section
 - Updated `supabase/DB_APPLY_CHECKLIST.md` with the new migration run order and row-count verification query
 - Migration designed idempotent (`on conflict (slug) do update`) for safe reruns
+
+## 2026-02-16 — Claude (Opus) — Google OAuth + UX polish + live data
+
+- Added Google OAuth credentials to `.env.local`; verified working locally and on Vercel
+- Built profile dropdown menu (user info / IP for guests, dark/light toggle, sign out)
+- Removed standalone theme toggle icon from nav bar
+- Fixed wiki TOC: replaced IntersectionObserver with scroll-position-based active tracking (fixes multi-highlight bug)
+- Switched exchange rate API from frankfurter.app → open.er-api.com (KRW support)
+- Fixed wiki Last Updated to use actual DB `updated_at` timestamp
+- Community polish: anonymous posting option, admin-only delete (server + client), SVG icons replacing emoji
+- Made community post list items fully clickable (not just title)
+- Added `force-dynamic` to community pages for live view/comment counts
+- Changed community page to use Supabase aggregate join `comments(count)` for real comment counts
+- Added `increment_views` RPC function (`supabase/migrations/2026-02-16-increment-views-rpc.sql`)
+- Committed as `d3122ec`, pushed to `main`
