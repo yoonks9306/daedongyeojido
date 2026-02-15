@@ -1,195 +1,290 @@
-/* Guide Tab (Landing Page) Styles */
+/* Guide Explorer (docs-style layout) */
 
 .guidePage {
   max-width: var(--content-max-width);
   margin-inline: auto;
-  padding-inline: var(--spacing-6);
-  padding-top: var(--spacing-6);
+  padding-inline: var(--spacing-4);
+  padding-top: var(--spacing-4);
 }
 
-/* ---- Hero banner ---- */
-.hero {
-  background: linear-gradient(
-    135deg,
-    color-mix(in srgb, var(--color-accent), transparent 88%) 0%,
-    var(--color-bg-secondary) 100%
-  );
-  border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius-lg);
-  padding: var(--spacing-10) var(--spacing-10);
+.topTabs {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  border-bottom: 1px solid var(--color-border-primary);
+  padding-bottom: 4px;
+  margin-bottom: var(--spacing-5);
+}
+
+.topTab {
+  border: none;
+  background: transparent;
+  color: var(--color-text-secondary);
+  font: inherit;
+  padding: 10px 12px;
+  white-space: nowrap;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+}
+
+.topTabActive {
+  color: var(--color-text-primary);
+  border-bottom-color: var(--color-accent);
+}
+
+.docsGrid {
+  display: grid;
+  grid-template-columns: 240px minmax(0, 1fr) 220px;
+  gap: var(--spacing-6);
+}
+
+.leftNav,
+.rightToc {
+  position: sticky;
+  top: calc(var(--nav-height) + var(--ad-banner-height) + var(--spacing-4));
+  align-self: start;
+  max-height: calc(100vh - var(--nav-height) - var(--ad-banner-height) - var(--spacing-8));
+  overflow-y: auto;
+}
+
+.leftTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-3);
+}
+
+.leftList,
+.tocList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.leftLink,
+.tocLink {
+  display: block;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  padding: 8px 10px;
+  border-radius: var(--border-radius-md);
+}
+
+.leftLink:hover,
+.tocLink:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-secondary);
+}
+
+.tocTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-3);
+}
+
+.mainContent {
+  min-width: 0;
+}
+
+.kicker {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  letter-spacing: 0.08em;
+  color: var(--color-accent);
+  margin-bottom: var(--spacing-2);
+}
+
+.mainTitle {
+  font-size: var(--font-size-3xl);
+  margin: 0 0 var(--spacing-2) 0;
+  border: none;
+}
+
+.subtitle {
+  color: var(--color-text-secondary);
+  font-size: var(--font-size-md);
+  margin-bottom: var(--spacing-3);
+}
+
+.intro {
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin-bottom: var(--spacing-6);
+}
+
+.section {
   margin-bottom: var(--spacing-8);
 }
 
-.heroTitle {
-  font-size: var(--font-size-3xl);
-  font-weight: var(--font-weight-bold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-3);
-  line-height: var(--line-height-tight);
+.sectionTitle {
+  font-size: var(--font-size-xl);
+  margin-bottom: var(--spacing-2);
   border: none;
   padding: 0;
 }
-.heroTitle span { color: var(--color-accent); }
 
-.heroSubtitle {
-  font-size: var(--font-size-lg);
+.sectionDesc {
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-3);
+  font-size: var(--font-size-sm);
+}
+
+.entryList {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: var(--spacing-3);
+}
+
+.entry {
+  border: 1px solid var(--color-border-primary);
+  background: var(--color-bg-secondary);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-4);
+}
+
+.entryTitle {
+  margin: 0 0 var(--spacing-2) 0;
+  border: none;
+  font-size: var(--font-size-md);
+}
+
+.entryBody {
   color: var(--color-text-secondary);
-  max-width: 600px;
   line-height: var(--line-height-relaxed);
+}
+
+.entryBody p:last-child {
   margin-bottom: 0;
 }
 
-/* ---- Two-column content grid ---- */
-.contentGrid {
-  display: grid;
-  grid-template-columns: 1fr 300px;
-  gap: var(--spacing-8);
-  align-items: start;
-}
-
-.mainColumn { min-width: 0; }
-
-.sideColumn {
-  position: sticky;
-  top: calc(var(--nav-height) + var(--ad-banner-height) + var(--spacing-4));
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-4);
-}
-
-/* ---- Guide sections ---- */
-.section { margin-bottom: var(--spacing-10); }
-
-.sectionHeader {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-3);
-  margin-bottom: var(--spacing-4);
-  padding-bottom: var(--spacing-3);
-  border-bottom: 2px solid var(--color-border-primary);
-}
-.sectionIcon  { font-size: var(--font-size-xl); line-height: 1; }
-.sectionTitle {
-  font-size: var(--font-size-xl);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  border: none;
-  padding: 0;
-  margin: 0;
-}
-.sectionDesc {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-muted);
-  margin-bottom: var(--spacing-4);
-}
-
-/* ---- Guide items ---- */
-.itemList { list-style: none; padding: 0; margin: 0; }
-
-.item {
-  padding: var(--spacing-4);
-  border: 1px solid var(--color-border-subtle);
-  border-radius: var(--border-radius-md);
-  margin-bottom: var(--spacing-3);
-  background: var(--color-bg-primary);
-  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
-}
-.item:hover {
-  border-color: var(--color-border-primary);
-  box-shadow: var(--shadow-sm);
-}
-
-.itemTitle {
-  font-size: var(--font-size-base);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text-primary);
-  margin-bottom: var(--spacing-2);
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  /* Override h3 default margins */
-  margin-top: 0;
-  border: none;
-}
-.itemContent {
-  font-size: var(--font-size-sm);
-  color: var(--color-text-secondary);
-  line-height: var(--line-height-relaxed);
-  margin: 0;
-}
-.itemContent a {
-  color: var(--color-text-link);
-  font-weight: var(--font-weight-medium);
-}
-
-/* ---- Sidebar widgets ---- */
-.quickRef {
-  background: var(--color-bg-secondary);
+.rateWidget {
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-md);
+  background: var(--color-bg-secondary);
   padding: var(--spacing-4);
+  margin-bottom: var(--spacing-6);
 }
 
-.quickRefTitle {
-  font-size: var(--font-size-xs);
-  font-weight: var(--font-weight-semibold);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--color-text-muted);
-  margin-bottom: var(--spacing-3);
-  padding-bottom: var(--spacing-2);
-  border-bottom: 1px solid var(--color-border-primary);
-}
-
-/* Emergency box */
-.emergencyBox {
-  background: color-mix(in srgb, #e53e3e, transparent 90%);
-  border: 1px solid color-mix(in srgb, #e53e3e, transparent 65%);
-  border-radius: var(--border-radius-md);
-  padding: var(--spacing-4);
-}
-
-.emergencyTitle {
-  font-size: var(--font-size-sm);
-  font-weight: var(--font-weight-bold);
-  color: #c53030;
-  margin-bottom: var(--spacing-3);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-[data-theme='dark'] .emergencyTitle  { color: #fc8181; }
-[data-theme='dark'] .emergencyBox    {
-  background: color-mix(in srgb, #c53030, transparent 85%);
-  border-color: color-mix(in srgb, #c53030, transparent 65%);
-}
-
-.emergencyItem {
+.rateHeader {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  font-size: var(--font-size-sm);
-  padding: var(--spacing-2) 0;
-  border-bottom: 1px solid color-mix(in srgb, #e53e3e, transparent 80%);
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
 }
-.emergencyItem:last-child { border-bottom: none; }
 
-.emergencyNum {
-  font-weight: var(--font-weight-bold);
-  font-family: var(--font-mono);
+.rateTitle {
+  margin: 0;
+  font-size: var(--font-size-md);
+  border: none;
+}
+
+.rateDate {
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.rateCards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--spacing-2);
+  margin-bottom: var(--spacing-3);
+}
+
+.rateCard {
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-3);
+  background: var(--color-bg-primary);
+}
+
+.rateCode {
+  margin: 0 0 4px 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.rateValue {
+  margin: 0;
+  font-weight: var(--font-weight-semibold);
   font-size: var(--font-size-base);
-  color: #c53030;
-}
-[data-theme='dark'] .emergencyNum { color: #fc8181; }
-
-/* ---- Responsive ---- */
-@media (max-width: 1024px) {
-  .contentGrid      { grid-template-columns: 1fr; }
-  .sideColumn       { position: static; }
 }
 
-@media (max-width: 768px) {
-  .guidePage        { padding-inline: var(--spacing-4); }
-  .hero             { padding: var(--spacing-6); }
-  .heroTitle        { font-size: var(--font-size-2xl); }
+.rateHint {
+  margin: 4px 0 0 0;
+  font-size: var(--font-size-xs);
+  color: var(--color-text-muted);
+}
+
+.rateCalculator {
+  display: grid;
+  grid-template-columns: 120px 100px 1fr;
+  gap: var(--spacing-2);
+}
+
+.rateInput,
+.rateSelect {
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  font: inherit;
+  padding: 8px 10px;
+}
+
+.rateResult {
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg-primary);
+  color: var(--color-text-primary);
+  padding: 8px 10px;
+  display: flex;
+  align-items: center;
+}
+
+.rateWidgetError {
+  border: 1px solid color-mix(in srgb, var(--color-accent), transparent 55%);
+  border-radius: var(--border-radius-md);
+  background: color-mix(in srgb, var(--color-accent), transparent 90%);
+  color: var(--color-accent);
+  padding: var(--spacing-3);
+  margin-bottom: var(--spacing-6);
+}
+
+@media (max-width: 1120px) {
+  .docsGrid {
+    grid-template-columns: 220px minmax(0, 1fr);
+  }
+
+  .rightToc {
+    display: none;
+  }
+}
+
+@media (max-width: 860px) {
+  .docsGrid {
+    grid-template-columns: 1fr;
+  }
+
+  .leftNav {
+    position: static;
+    max-height: none;
+    overflow: visible;
+    border: 1px solid var(--color-border-primary);
+    border-radius: var(--border-radius-md);
+    background: var(--color-bg-secondary);
+    padding: var(--spacing-3);
+  }
+
+  .rateCards {
+    grid-template-columns: 1fr;
+  }
+
+  .rateCalculator {
+    grid-template-columns: 1fr;
+  }
 }

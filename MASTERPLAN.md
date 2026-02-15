@@ -10,12 +10,12 @@
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **Phase 4 (SEO 1st pass)**: crawl/share fundamentals implemented
-  - Added `src/app/sitemap.ts` and `src/app/robots.ts`
-  - Added site OG image (`/opengraph-image`) and wiki per-article OG image (`/wiki/[slug]/opengraph-image`)
-  - Added page-level Open Graph/Twitter metadata for wiki articles
-  - Added Korean metadata keywords in root layout
-  - Build verified after changes: 36 routes generated, TypeScript pass
+- **Phase 4 (Guide IA + UX expansion)**: docs-style Guide redesign and money widget
+  - Rebuilt Guide into 8 top categories (`Start Here` → `Work & Study`) with expanded field-friction content
+  - Implemented Claude-docs style layout: top tabs + left category nav + right "On this page"
+  - Added real-time Money rate widget (USD/JPY/CNY + currency dropdown) via `/api/v1/exchange-rates`
+  - Refactored guide data model to tab/group/entry structure for large-scale content growth
+  - Build verified after changes: 37 routes generated, TypeScript pass
 
 ### Currently blocked on
 - No active blocker reported in this session.
@@ -24,7 +24,7 @@
 ### Next task for incoming agent
 **Phase 4 continued:**
 1. Expand wiki content (toward 100+ articles)
-2. Expand guide sections and practical travel checklists
+2. Expand guide sections and practical travel checklists (city-specific and scenario packs)
 3. Optional hardening: ownership/role guard for wiki edit API
 4. Optional hardening: initial voted-state preload on community list
 
@@ -225,7 +225,7 @@ Defined in `src/app/globals.css`.
 - [x] `robots.ts`
 - [x] `opengraph-image` per wiki article
 - [ ] Expand wiki articles (target: 100+)
-- [ ] Expand guide sections
+- [x] Expand guide sections
 - [x] Internal hyperlinks between wiki articles
 - [x] Korean-language metadata for SEO
 

@@ -131,3 +131,13 @@
 - Updated root metadata (`layout.tsx`) with metadataBase, Open Graph/Twitter config, and Korean SEO keywords
 - Updated wiki article metadata to include per-article OG/Twitter image
 - Build verified after changes: 36 routes generated, TypeScript pass
+
+## 2026-02-16 — Codex (GPT-5) — Phase 4: Guide IA/UX expansion
+
+- Redesigned Guide page into 8 top categories (`Start Here`, `Arrival & Transport`, `Money`, `Connectivity & Apps`, `Lifestyle`, `Accommodations`, `Health & Safety`, `Work & Study`)
+- Implemented docs-style guide explorer (`GuideExplorer.tsx`): top tabs + left nav + right page TOC
+- Replaced guide data model with scalable `tab -> group -> entry` structure (`src/data/guide-content.ts`)
+- Added real-time money widget (`ExchangeRateWidget.tsx`) for USD/JPY/CNY with dropdown selector
+- Added exchange-rate API proxy route: `GET /api/v1/exchange-rates`
+- Updated shared guide types to align with the new structure
+- Build verified after changes: 37 routes generated, TypeScript pass

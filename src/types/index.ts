@@ -10,18 +10,25 @@ export interface WikiArticle {
   lastUpdated: string;
 }
 
-export interface GuideItem {
+export interface GuideEntry {
+  id: string;
   title: string;
   content: string;
-  icon?: string;
 }
 
-export interface GuideSection {
+export interface GuideGroup {
   id: string;
   title: string;
   description: string;
-  icon: string;
-  items: GuideItem[];
+  entries: GuideEntry[];
+}
+
+export interface GuideTab {
+  id: string;
+  title: string;
+  subtitle: string;
+  intro: string;
+  groups: GuideGroup[];
 }
 
 export interface CommunityPost {

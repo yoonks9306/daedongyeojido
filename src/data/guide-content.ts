@@ -1,182 +1,375 @@
-export interface GuideItem {
+export interface GuideEntry {
+  id: string;
   title: string;
   content: string;
-  icon?: string;
 }
 
-export interface GuideSection {
+export interface GuideGroup {
   id: string;
   title: string;
   description: string;
-  icon: string;
-  items: GuideItem[];
+  entries: GuideEntry[];
 }
 
-export const guideSections: GuideSection[] = [
+export interface GuideTab {
+  id: string;
+  title: string;
+  subtitle: string;
+  intro: string;
+  groups: GuideGroup[];
+}
+
+export const guideTabs: GuideTab[] = [
   {
-    id: "getting-around",
-    title: "Getting Around",
-    description: "Korea's public transport is world-class. Here's how to navigate it.",
-    icon: "🚇",
-    items: [
+    id: 'start-here',
+    title: '1. Start Here',
+    subtitle: 'What this site is and how to use it without getting lost in 900 tabs.',
+    intro:
+      'KorWiki is for people who want practical, field-tested help in Korea. Not brochure fluff. Start with this page if your current strategy is "land first, panic later."',
+    groups: [
       {
-        title: "Get a T-money Card First",
-        icon: "💳",
-        content: "Your first priority after landing. Pick up a <a href=\"/wiki/t-money\">T-money card</a> at any convenience store or subway station for ~₩3,000. Load it up and use it on all subways, buses, and most taxis. <del>Paying cash on the bus is technically possible but everyone will hate you</del>."
+        id: 'how-to-read',
+        title: 'How To Read KorWiki Fast',
+        description: 'Get answers quickly instead of doom-scrolling.',
+        entries: [
+          {
+            id: 'route-for-first-week',
+            title: 'Recommended Reading Route (First Week in Korea)',
+            content:
+              'Day 0: read <a href="#arrival-playbook">Arrival Playbook</a>. Day 1: read <a href="#transport-core">Transport Core</a> + <a href="#money-core">Money Core</a>. Day 2 onward: jump by pain point. <del>If you read 40 pages before boarding, you are either very prepared or very anxious</del>.',
+          },
+          {
+            id: 'labels-explained',
+            title: 'How To Interpret Labels',
+            content:
+              'Articles mix <strong>Fact</strong>, <strong>Field Note</strong>, <strong>Tip</strong>, and <strong>Warning</strong>. Fact means policy/official rule. Field Note means recurring user-reported friction. Tip and Warning are tactical.',
+          },
+        ],
       },
       {
-        title: "Seoul Subway",
-        icon: "🚇",
-        content: "The <a href=\"/wiki/seoul-subway\">Seoul Metro</a> covers virtually everywhere you want to go. 9+ lines, runs 5:30am to midnight. Fares start at ₩1,400 with T-money. Signs are in Korean, English, Chinese, and Japanese."
+        id: 'core-links',
+        title: 'Essential Jump Links',
+        description: 'If you only click 5 things, click these.',
+        entries: [
+          {
+            id: 'must-read-links',
+            title: 'First-Trip Essential Pages',
+            content:
+              '<a href="/wiki/naver-map">Naver Map</a>, <a href="/wiki/t-money">T-money</a>, <a href="/wiki/sim-card">SIM/eSIM</a>, <a href="/wiki/currency-exchange">Currency Exchange</a>, <a href="/wiki/kakao-t">KakaoT</a>.',
+          },
+        ],
       },
-      {
-        title: "Taking a Taxi",
-        icon: "🚕",
-        content: "Taxis are affordable and plentiful. Use <a href=\"/wiki/kakao-t\">KakaoT</a> app to hail a cab — it works like Uber and avoids communication barriers. Base fare ~₩4,800. Most drivers accept T-money card payment. <del>Trying to hail a street taxi while waving dramatically like in a drama works too</del>."
-      },
-      {
-        title: "KTX for Long Distances",
-        icon: "🚄",
-        content: "Heading to Busan, Gyeongju, or other cities? The <a href=\"/wiki/ktx\">KTX</a> is fast, comfortable, and punctual. Seoul to Busan in ~2h15min. Book in advance on the KORAIL website or KorailPass app."
-      }
-    ]
+    ],
   },
   {
-    id: "essential-apps",
-    title: "Essential Apps",
-    description: "Download these before landing. Some require setup that works better on WiFi.",
-    icon: "📱",
-    items: [
+    id: 'arrival-transport',
+    title: '2. Arrival & Transport',
+    subtitle: 'From airport chaos to smooth subway transfers.',
+    intro:
+      'Korea transport is excellent once you know the mechanics. Most stress happens in the first 24 hours.',
+    groups: [
       {
-        title: "Naver Map — Your Navigation Bible",
-        icon: "🗺️",
-        content: "<a href=\"/wiki/naver-map\">Naver Map</a> is the Google Maps of Korea — but better for Korea. Google Maps has poor public transit data here. Naver Map shows real-time subway arrivals, walking directions, and even bus ETAs. English mode available."
+        id: 'arrival-playbook',
+        title: 'Arrival Playbook',
+        description: 'Your first two hours after landing.',
+        entries: [
+          {
+            id: 'airport-two-hour-plan',
+            title: 'The First 2-Hour Plan',
+            content:
+              'Sequence: immigration -> SIM/eSIM check -> T-money card -> airport rail/taxi decision. Keep one screenshot of your destination address in Korean. <del>Spell-checking an address at the taxi door is a character-building moment</del>.',
+          },
+          {
+            id: 'airport-transfer-options',
+            title: 'Airport Transfer Decision Table',
+            content:
+              'AREX is cheapest and predictable. Limousine bus is easiest with luggage. Taxi is best when tired, late, or in a group. Use <a href="/wiki/kakao-t">KakaoT</a> if possible.',
+          },
+        ],
       },
       {
-        title: "KakaoT — Taxi App",
-        icon: "🚖",
-        content: "<a href=\"/wiki/kakao-t\">KakaoT</a> lets you book taxis in English, see estimated fares, and pay by card. Essential for late nights or areas with few cabs. Note: full features require a Korean phone number."
+        id: 'transport-core',
+        title: 'Transport Core',
+        description: 'Subway, bus, taxi, KTX in one place.',
+        entries: [
+          {
+            id: 'subway-survival',
+            title: 'Subway Survival',
+            content:
+              'Use <a href="/wiki/naver-map">Naver Map</a> for exits and transfer cars. Late-night last train times matter. Missing one connection can turn 35 minutes into "why am I still outside?" territory.',
+          },
+          {
+            id: 'bus-etiquette',
+            title: 'Bus Basics and Etiquette',
+            content:
+              'Tag in and tag out with T-money. Exit from the rear unless indicated otherwise. Keep backpack low in crowded buses. This one change prevents 80% of accidental shoulder-fights.',
+          },
+          {
+            id: 'taxi-reality',
+            title: 'Taxi Reality Check',
+            content:
+              'Most rides are fine. Night/weekend demand spikes are real. Keep destination in Korean text ready. Short-trip refusals still happen occasionally; app booking reduces this.',
+          },
+        ],
       },
-      {
-        title: "Naver Papago — Translation",
-        icon: "🌐",
-        content: "Better than Google Translate for Korean. Camera translate mode works well for menus. Download offline language packs for subway/WiFi-dead zones."
-      },
-      {
-        title: "Coupang & Coupang Eats",
-        icon: "📦",
-        content: "Staying a week or more? <a href=\"/wiki/coupang\">Coupang</a> delivers next morning before 7am. Coupang Eats rivals any food delivery service globally — cheap, fast, everything available."
-      }
-    ]
+    ],
   },
   {
-    id: "money-payments",
-    title: "Money & Payments",
-    description: "Korea is increasingly cashless, but cash is still useful in certain situations.",
-    icon: "💰",
-    items: [
+    id: 'money',
+    title: '3. Money',
+    subtitle: 'Payment, exchange, and banking without expensive mistakes.',
+    intro:
+      'Korea is card-friendly, but edge cases still hurt travelers. This section is about avoiding silent failure at the register.',
+    groups: [
       {
-        title: "Currency Exchange",
-        icon: "💱",
-        content: "Get <a href=\"/wiki/currency-exchange\">Korean Won</a> at Myeongdong money changers for the best rates — significantly better than the airport. Bring USD, EUR, or JPY in cash for best rates. Shinhan Bank's Global ATMs accept most foreign cards."
+        id: 'money-core',
+        title: 'Payment & Exchange',
+        description: 'Where money plans fail and how to recover.',
+        entries: [
+          {
+            id: 'card-failure-plan',
+            title: 'When Your Foreign Card Randomly Fails',
+            content:
+              'Have three layers: main card, backup card (different network), and emergency cash. Some kiosks and legacy terminals reject overseas cards unpredictably.',
+          },
+          {
+            id: 'exchange-playbook',
+            title: 'Exchange Playbook',
+            content:
+              'Airport exchange is convenience, not value. City exchanges are usually better. Always compare spread + fee. Keep small KRW bills for transit and small shops.',
+          },
+        ],
       },
       {
-        title: "Cards & Contactless",
-        icon: "💳",
-        content: "Visa and Mastercard are accepted at most establishments. Samsung Pay and Apple Pay work at many places. Smaller restaurants and street food may be cash-only. Always carry ₩50,000–₩100,000 cash as backup."
+        id: 'account-setup',
+        title: 'Bank Account Realities',
+        description: 'What is easy, what is not, and why.',
+        entries: [
+          {
+            id: 'account-eligibility',
+            title: 'Can Visitors Open a Korean Bank Account?',
+            content:
+              'Usually difficult for short-term visitors. Long-stay residents have better options with ARC and local documents. Plan your remittance flow before arrival if possible.',
+          },
+        ],
       },
-      {
-        title: "No Tipping",
-        icon: "🙅",
-        content: "Korea has no <a href=\"/wiki/tipping-culture\">tipping culture</a>. Do not tip at restaurants, taxis, or hotels. It can even cause awkwardness. High-end hotels may include a 10% service charge automatically."
-      }
-    ]
+    ],
   },
   {
-    id: "stay-connected",
-    title: "Stay Connected",
-    description: "Korea has world-class 5G coverage. Getting connected is easy.",
-    icon: "📡",
-    items: [
+    id: 'connectivity-apps',
+    title: '4. Connectivity & Apps',
+    subtitle: 'Digital-first Korea: fast network, app-heavy workflows, fewer excuses.',
+    intro:
+      'Korea is one of the most digitally developed societies in the world. That is amazing, until one app asks for local verification you do not have.',
+    groups: [
       {
-        title: "SIM Card or eSIM",
-        icon: "📶",
-        content: "Pick up a tourist <a href=\"/wiki/sim-card\">SIM card</a> at Incheon Airport (SKT, KT, LG U+ booths at arrivals). Data-only SIMs start around ₩33,000/month. eSIM via Airalo works before you land — recommended for newer unlocked phones."
+        id: 'sim-esim',
+        title: 'SIM / eSIM Setup',
+        description: 'Stay online from minute one.',
+        entries: [
+          {
+            id: 'sim-vs-esim',
+            title: 'SIM vs eSIM Decision',
+            content:
+              'eSIM is fastest if your phone supports it. Physical SIM is safer if compatibility is unclear. Test activation before leaving airport Wi-Fi range.',
+          },
+          {
+            id: 'number-verification-limits',
+            title: 'Phone Verification Limits',
+            content:
+              'Some services require Korean number identity checks that tourist SIMs may not satisfy. Keep alternative flows ready (desktop web, guest checkout, friend assist).',
+          },
+        ],
       },
       {
-        title: "Free WiFi",
-        icon: "📡",
-        content: "Free WiFi is available in most cafes, restaurants, and all subway stations. Quality varies. Airport WiFi is fast and free. Government WiFi hotspots (iptime, KT WiFi) are everywhere but throttled."
-      }
-    ]
+        id: 'must-have-apps',
+        title: 'Must-Have Apps',
+        description: 'Install first, regret less.',
+        entries: [
+          {
+            id: 'navigation-translation',
+            title: 'Navigation + Translation Stack',
+            content:
+              '<a href="/wiki/naver-map">Naver Map</a> + Papago is the baseline combo. One gets you there, one helps you survive menus and forms.',
+          },
+          {
+            id: 'mobility-pay',
+            title: 'Mobility + Payment Stack',
+            content:
+              '<a href="/wiki/kakao-t">KakaoT</a>, local wallet/payment apps, and transit top-up routines save surprising amounts of time.',
+          },
+        ],
+      },
+    ],
   },
   {
-    id: "food-drink",
-    title: "Food & Drink",
-    description: "Korean food culture has a few key things to know before diving in.",
-    icon: "🍖",
-    items: [
+    id: 'lifestyle',
+    title: '5. Lifestyle',
+    subtitle: 'Food, routines, social norms, and daily frictions people do not tell you before arrival.',
+    intro:
+      'Lifestyle is where small cultural misses become daily stress. This section keeps those misses small and recoverable.',
+    groups: [
       {
-        title: "Korean BBQ Basics",
-        icon: "🔥",
-        content: "At <a href=\"/wiki/korean-bbq\">Korean BBQ</a> restaurants, you grill meat at your table. Banchan (side dishes) are free and refillable — just ask. Wrap meat in lettuce with garlic and ssamjang paste. <del>Using the scissors to cut meat feels weird at first but you'll be a pro by day 2</del>."
+        id: 'food-routines',
+        title: 'Food and Everyday Eating',
+        description: 'How to eat well without translation roulette.',
+        entries: [
+          {
+            id: 'ordering-practical',
+            title: 'Ordering Without Panic',
+            content:
+              'Photos, set menus, and simple Korean phrases go far. Lunch queues move fast; hesitation is normal on day 1 and gone by day 3.',
+          },
+          {
+            id: 'dietary-reality',
+            title: 'Dietary Restriction Reality',
+            content:
+              'Vegetarian/halal options exist but require planning by neighborhood. Do not assume broth is meat-free unless explicitly confirmed.',
+          },
+        ],
       },
       {
-        title: "Convenience Store Food",
-        icon: "🏪",
-        content: "Korea's <a href=\"/wiki/convenience-store\">편의점 (convenience stores)</a> are legendary. Triangle kimbap (~₩1,500), cup ramen with hot water station, hotteok, steamed buns. Open 24/7, on every block."
+        id: 'etiquette',
+        title: 'Culture & Etiquette',
+        description: 'Respect signals that make interactions smoother.',
+        entries: [
+          {
+            id: 'public-space-rules',
+            title: 'Public Space Signals',
+            content:
+              'Queue order, low phone voice in transit, and giving priority seats to elderly passengers are noticed and appreciated.',
+          },
+          {
+            id: 'social-humor',
+            title: 'Social Humor Rule',
+            content:
+              'Light self-deprecating humor works better than loud sarcasm in first interactions. <del>Being funny is optional. Being rude by accident is expensive</del>.',
+          },
+        ],
       },
-      {
-        title: "Dietary Restrictions",
-        icon: "🥗",
-        content: "Vegetarian/vegan options are improving but still limited outside Seoul. Many dishes contain meat stock even if no visible meat. Apps like HappyCow or searching '비건 (vegan)' or '채식 (vegetarian)' help. Halal-certified restaurants exist in Itaewon and some areas."
-      }
-    ]
+    ],
   },
   {
-    id: "culture-etiquette",
-    title: "Culture & Etiquette",
-    description: "A few key cultural norms will make your trip much smoother.",
-    icon: "🙏",
-    items: [
+    id: 'accommodations',
+    title: '6. Accommodations',
+    subtitle: 'Hotels, short stays, and long-stay housing risk control.',
+    intro:
+      'The biggest money mistakes often happen in housing, not flights. Read this before paying deposits.',
+    groups: [
       {
-        title: "Respect for Elders",
-        icon: "👴",
-        content: "Korean culture is Confucian-influenced. Offer seats on public transport to elderly passengers. When dining with Koreans, let elders sit and eat first. Receiving items (business cards, gifts, dishes) with two hands or right hand supported by left is respectful."
+        id: 'short-stay',
+        title: 'Short-Stay Booking',
+        description: 'Hotel/guesthouse selection under uncertainty.',
+        entries: [
+          {
+            id: 'location-over-room',
+            title: 'Location Beats Room Size',
+            content:
+              'Near subway and convenience stores wins over larger rooms in isolated zones. Transit friction compounds every day.',
+          },
+        ],
       },
       {
-        title: "Shoes Off Indoors",
-        icon: "👟",
-        content: "Many traditional restaurants, guesthouses, and homes require removing shoes. Look for a step-up threshold or visible shoe rack — that's your cue."
+        id: 'long-stay',
+        title: 'Long-Stay Basics',
+        description: 'Deposits, contracts, and monthly cost reality.',
+        entries: [
+          {
+            id: 'deposit-structure',
+            title: 'Deposit and Monthly Cost Structure',
+            content:
+              'Understand deposit, monthly rent, and management fees separately. Ask for utility rules in writing before payment.',
+          },
+          {
+            id: 'contract-redflags',
+            title: 'Contract Red Flags',
+            content:
+              'Unclear maintenance clauses, verbal-only promises, and vague refund terms are warning signs. Get specifics documented.',
+          },
+        ],
       },
-      {
-        title: "Hanbok Experience",
-        icon: "👘",
-        content: "Renting a <a href=\"/wiki/hanbok\">hanbok</a> (traditional Korean dress) near Gyeongbokgung lets you enter most palaces for free and makes for great photos. Shops near the palace gate rent for ₩15,000–₩30,000 for 2-4 hours."
-      },
-      {
-        title: "No Tipping",
-        icon: "🚫",
-        content: "Reiterated for emphasis: <a href=\"/wiki/tipping-culture\">do not tip</a> in Korea. It's not customary and can cause confusion."
-      }
-    ]
+    ],
   },
   {
-    id: "emergency",
-    title: "Emergency Information",
-    description: "Save these numbers before you go out. Tourist hotlines have English support.",
-    icon: "🆘",
-    items: [
+    id: 'health-safety',
+    title: '7. Health & Safety',
+    subtitle: 'What to do when things go wrong at 2 a.m.',
+    intro:
+      'You probably will not need this section. That is exactly why it should be prepared before you do.',
+    groups: [
       {
-        title: "Emergency Numbers",
-        icon: "📞",
-        content: "<strong>Police: 112</strong> | <strong>Fire/Ambulance: 119</strong> | <strong>Tourist Hotline (English 24/7): 1330</strong> | Coast Guard: 122. The 1330 tourist hotline is excellent — they can translate for you in real-time if you're stuck in a situation where you need to communicate with locals."
+        id: 'medical-access',
+        title: 'Medical Access',
+        description: 'Clinics, pharmacies, and emergency care.',
+        entries: [
+          {
+            id: 'clinic-vs-er',
+            title: 'Clinic vs Emergency Room',
+            content:
+              'Use clinics for non-urgent care and ER for urgent conditions. Keep passport and basic medication list ready.',
+          },
+          {
+            id: 'pharmacy-basics',
+            title: 'Pharmacy Basics',
+            content:
+              'Pharmacists are often very helpful for common symptoms. Use translation support for allergies and existing conditions.',
+          },
+        ],
       },
       {
-        title: "Medical Care",
-        icon: "🏥",
-        content: "Korea has excellent, affordable medical care. Severance Hospital (Sinchon) and Samsung Medical Center have international clinics. ER visits are generally quick and affordable compared to Western countries. Bring your passport for registration."
-      }
-    ]
-  }
+        id: 'safety-playbook',
+        title: 'Safety Playbook',
+        description: 'Prevention and incident response.',
+        entries: [
+          {
+            id: 'emergency-numbers',
+            title: 'Emergency Contacts',
+            content:
+              '<strong>112</strong> (police), <strong>119</strong> (fire/ambulance), <strong>1330</strong> (tourist support). Save before you need them.',
+          },
+          {
+            id: 'lost-items',
+            title: 'Lost Item Response',
+            content:
+              'Act fast: station office, taxi company, or local police desk depending on where the item was lost. Time matters more than paperwork perfection.',
+          },
+        ],
+      },
+    ],
+  },
+  {
+    id: 'work-study',
+    title: '8. Work & Study',
+    subtitle: 'Living beyond tourism: campus, office, and admin expectations.',
+    intro:
+      'If you are in Korea for work or school, operational friction shifts from transport to systems and documents.',
+    groups: [
+      {
+        id: 'work-basics',
+        title: 'Workplace Basics',
+        description: 'Communication and expectation gaps.',
+        entries: [
+          {
+            id: 'office-culture',
+            title: 'Office Culture Snapshot',
+            content:
+              'Hierarchy and response speed expectations can be different from what many foreigners are used to. Clarify channels and deadlines early.',
+          },
+        ],
+      },
+      {
+        id: 'study-basics',
+        title: 'Study and Campus Life',
+        description: 'Academic logistics and daily workflows.',
+        entries: [
+          {
+            id: 'student-admin',
+            title: 'Student Admin Habits',
+            content:
+              'Track deadlines for registration, visa, insurance, and certificates in one calendar. Missing one form can create a long correction loop.',
+          },
+        ],
+      },
+    ],
+  },
 ];
