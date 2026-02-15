@@ -116,3 +116,8 @@
   - `2026-02-16-local-auth-users.sql`
   - full `supabase/schema.sql`
 - User confirmed Vercel environment variables already configured with Claude Code.
+
+## 2026-02-16 — Codex (GPT-5) — UI hotfix: visited link color
+
+- Fixed global visited-link behavior to keep brand link color consistent (no purple visited state)
+- Updated `src/app/globals.css`: `a:visited` now uses `var(--color-text-link)`
