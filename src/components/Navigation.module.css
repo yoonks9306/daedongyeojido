@@ -104,15 +104,17 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
   border: 1px solid var(--color-border-primary);
-  border-radius: var(--border-radius-md);
+  border-radius: 50%;
   background: var(--color-bg-secondary);
   color: var(--color-text-secondary);
   text-decoration: none;
   transition: background var(--transition-fast), color var(--transition-fast);
   flex-shrink: 0;
+  overflow: hidden;
+  padding: 0;
 }
 .loginBtn:hover {
   background: var(--color-bg-nav-hover);
@@ -122,6 +124,18 @@
 .loginBtnActive {
   background: var(--color-bg-nav-hover);
   border-color: var(--color-accent);
+}
+
+.avatarImage {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.avatarIcon {
+  width: 18px;
+  height: 18px;
 }
 
 /* User menu wrapper + dropdown */
