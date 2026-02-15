@@ -9,6 +9,7 @@ type CommentsRouteContext = {
 
 type CreateCommentBody = {
   content?: unknown;
+  anonymous?: unknown;
 };
 
 function toPostId(value: string): number | null {
@@ -46,7 +47,7 @@ export async function GET(_request: Request, context: CommentsRouteContext) {
 
   const { data, error } = await supabaseAdmin
     .from('comments')
-    .select('id, post_id, author_name, content, created_at')
+    .select('id, post_id, author_name, content, score, created_at')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 
@@ -59,6 +60,7 @@ export async function GET(_request: Request, context: CommentsRouteContext) {
     postId: row.post_id,
     author: row.author_name,
     content: row.content,
+    score: row.score ?? 0,
     createdAt: row.created_at,
   }));
 
@@ -91,7 +93,10 @@ export async function POST(request: Request, context: CommentsRouteContext) {
 
   try {
     const authorId = await ensureCommunityAuthUser(session);
-    const authorName = session.user.name?.trim() || session.user.email?.split('@')[0] || 'Anonymous';
+    const isAnonymous = body.anonymous === true;
+    const authorName = isAnonymous
+      ? 'Anonymous'
+      : (session.user.name?.trim() || session.user.email?.split('@')[0] || 'Anonymous');
 
     const { data, error } = await supabaseAdmin
       .from('comments')
@@ -101,7 +106,7 @@ export async function POST(request: Request, context: CommentsRouteContext) {
         author_name: authorName,
         content,
       })
-      .select('id, post_id, author_name, content, created_at')
+      .select('id, post_id, author_name, content, score, created_at')
       .single();
 
     if (error) {
@@ -117,6 +122,7 @@ export async function POST(request: Request, context: CommentsRouteContext) {
           postId: data.post_id,
           author: data.author_name,
           content: data.content,
+          score: data.score ?? 0,
           createdAt: data.created_at,
         },
       },

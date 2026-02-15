@@ -14,10 +14,18 @@ const CAT_LABELS: Record<CommunityPost['category'], string> = {
   tip: 'Tip',
 };
 
-function UpvoteIcon() {
+function ChevronUp({ size = 16 }: { size?: number }) {
   return (
-    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
       <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  );
+}
+
+function ChevronDown({ size = 16 }: { size?: number }) {
+  return (
+    <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="6 9 12 15 18 9"/>
     </svg>
   );
 }
@@ -51,33 +59,101 @@ export default function CommunityDetailClient({
   const [post, setPost] = useState(initialPost);
   const [comments, setComments] = useState(initialComments);
   const [content, setContent] = useState('');
+  const [anonymous, setAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  // Post vote state
+  const [postVote, setPostVote] = useState<1 | -1 | 0>(0);
+  const [postVoteLoading, setPostVoteLoading] = useState(false);
+
+  // Comment vote state
+  const [commentScores, setCommentScores] = useState<Record<number, number>>({});
+  const [commentVotes, setCommentVotes] = useState<Record<number, 1 | -1 | 0>>({});
+
+  function requireLogin() {
     if (!session?.user) {
       router.push(`/login?callbackUrl=/community/${post.id}`);
-      return;
+      return true;
     }
+    return false;
+  }
 
+  async function handlePostVote(direction: 1 | -1) {
+    if (requireLogin() || postVoteLoading) return;
+    setPostVoteLoading(true);
+    try {
+      if (postVote === direction) {
+        const res = await fetch(`/api/v1/community/posts/${post.id}/vote`, { method: 'DELETE' });
+        const data = (await res.json()) as { upvotes?: number };
+        if (res.ok && typeof data.upvotes === 'number') {
+          setPost((p) => ({ ...p, upvotes: data.upvotes as number }));
+          setPostVote(0);
+        }
+      } else if (direction === 1) {
+        const res = await fetch(`/api/v1/community/posts/${post.id}/vote`, { method: 'POST' });
+        const data = (await res.json()) as { upvotes?: number };
+        if (res.ok && typeof data.upvotes === 'number') {
+          setPost((p) => ({ ...p, upvotes: data.upvotes as number }));
+          setPostVote(1);
+        }
+      } else {
+        const res = await fetch(`/api/v1/community/posts/${post.id}/vote`, { method: 'DELETE' });
+        const data = (await res.json()) as { upvotes?: number };
+        if (res.ok && typeof data.upvotes === 'number') {
+          setPost((p) => ({ ...p, upvotes: data.upvotes as number }));
+          setPostVote(-1);
+        }
+      }
+    } catch { /* ignore */ }
+    finally { setPostVoteLoading(false); }
+  }
+
+  async function handleCommentVote(commentId: number, direction: 1 | -1) {
+    if (requireLogin()) return;
+    const current = commentVotes[commentId] ?? 0;
+    try {
+      if (current === direction) {
+        const res = await fetch(`/api/v1/community/comments/${commentId}/vote`, { method: 'DELETE' });
+        const data = (await res.json()) as { score?: number };
+        if (res.ok && typeof data.score === 'number') {
+          setCommentScores((prev) => ({ ...prev, [commentId]: data.score as number }));
+          setCommentVotes((prev) => ({ ...prev, [commentId]: 0 }));
+        }
+      } else {
+        const res = await fetch(`/api/v1/community/comments/${commentId}/vote`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ vote: direction }),
+        });
+        const data = (await res.json()) as { score?: number };
+        if (res.ok && typeof data.score === 'number') {
+          setCommentScores((prev) => ({ ...prev, [commentId]: data.score as number }));
+          setCommentVotes((prev) => ({ ...prev, [commentId]: direction }));
+        }
+      }
+    } catch { /* ignore */ }
+  }
+
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault();
+    if (requireLogin()) return;
     setSubmitting(true);
     setError(null);
-
     try {
       const response = await fetch(`/api/v1/community/posts/${post.id}/comments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ content }),
+        body: JSON.stringify({ content, anonymous }),
       });
       const payload = (await response.json()) as { comment?: CommunityComment; error?: string };
       if (!response.ok || !payload.comment) {
         throw new Error(payload.error ?? 'Failed to post comment.');
       }
-
       setComments((prev) => [...prev, payload.comment as CommunityComment]);
       setPost((prev) => ({ ...prev, comments: prev.comments + 1 }));
       setContent('');
+      setAnonymous(false);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to post comment.');
     } finally {
@@ -100,13 +176,32 @@ export default function CommunityDetailClient({
             </span>
             <span>{post.author}</span>
             <span>{new Date(post.createdAt).toLocaleString('en-US')}</span>
-            <span className={styles.metaIcon}><UpvoteIcon /> {post.upvotes}</span>
             <span className={styles.metaIcon}><CommentIcon /> {post.comments}</span>
             <span className={styles.metaIcon}><ViewIcon /> {post.views.toLocaleString()}</span>
           </div>
         </header>
 
         <div className={styles.content}>{post.content}</div>
+
+        <div className={styles.postVoteBar}>
+          <button
+            className={`${styles.voteBtn} ${postVote === 1 ? styles.voteBtnUpActive : ''}`}
+            onClick={() => { void handlePostVote(1); }}
+            disabled={postVoteLoading}
+            aria-label="Upvote post"
+          >
+            <ChevronUp size={18} />
+          </button>
+          <span className={styles.voteScore}>{post.upvotes}</span>
+          <button
+            className={`${styles.voteBtn} ${postVote === -1 ? styles.voteBtnDownActive : ''}`}
+            onClick={() => { void handlePostVote(-1); }}
+            disabled={postVoteLoading}
+            aria-label="Downvote post"
+          >
+            <ChevronDown size={18} />
+          </button>
+        </div>
       </article>
 
       <section className={styles.commentsSection}>
@@ -123,12 +218,20 @@ export default function CommunityDetailClient({
               required
               disabled={submitting}
             />
-            {error && <p className={styles.error}>{error}</p>}
-            <div className={styles.actions}>
+            <div className={styles.formFooter}>
+              <label className={styles.checkboxLabel}>
+                <input
+                  type="checkbox"
+                  checked={anonymous}
+                  onChange={(e) => setAnonymous(e.target.checked)}
+                />
+                Post anonymously
+              </label>
               <button type="submit" className={styles.submitBtn} disabled={submitting}>
                 {submitting ? 'Posting...' : 'Post Comment'}
               </button>
             </div>
+            {error && <p className={styles.error}>{error}</p>}
           </form>
         ) : (
           <div className={styles.loginPrompt}>
@@ -140,15 +243,38 @@ export default function CommunityDetailClient({
         )}
 
         <ul className={styles.commentList}>
-          {comments.map((comment) => (
-            <li key={comment.id} className={styles.commentItem}>
-              <div className={styles.commentMeta}>
-                <strong>{comment.author}</strong>
-                <span>{new Date(comment.createdAt).toLocaleString('en-US')}</span>
-              </div>
-              <p className={styles.commentContent}>{comment.content}</p>
-            </li>
-          ))}
+          {comments.map((comment) => {
+            const score = commentScores[comment.id] ?? comment.score;
+            const userVote = commentVotes[comment.id] ?? 0;
+            return (
+              <li key={comment.id} className={styles.commentItem}>
+                <div className={styles.commentVoteCol}>
+                  <button
+                    className={`${styles.commentVoteBtn} ${userVote === 1 ? styles.voteBtnUpActive : ''}`}
+                    onClick={() => { void handleCommentVote(comment.id, 1); }}
+                    aria-label="Upvote comment"
+                  >
+                    <ChevronUp size={14} />
+                  </button>
+                  <span className={styles.commentVoteScore}>{score}</span>
+                  <button
+                    className={`${styles.commentVoteBtn} ${userVote === -1 ? styles.voteBtnDownActive : ''}`}
+                    onClick={() => { void handleCommentVote(comment.id, -1); }}
+                    aria-label="Downvote comment"
+                  >
+                    <ChevronDown size={14} />
+                  </button>
+                </div>
+                <div className={styles.commentBody}>
+                  <div className={styles.commentMeta}>
+                    <strong>{comment.author}</strong>
+                    <span>{new Date(comment.createdAt).toLocaleString('en-US')}</span>
+                  </div>
+                  <p className={styles.commentContent}>{comment.content}</p>
+                </div>
+              </li>
+            );
+          })}
           {comments.length === 0 && (
             <li className={styles.empty}>No comments yet.</li>
           )}

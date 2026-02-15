@@ -3,7 +3,6 @@ import Script from 'next/script';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import AuthProvider from '@/components/AuthProvider';
 import Navigation from '@/components/Navigation';
-import AdBanner from '@/components/AdBanner';
 import './globals.css';
 
 export const metadata: Metadata = {
@@ -52,21 +51,15 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <head>
+      <body>
         <Script
-          async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-1126883662685001"
           crossOrigin="anonymous"
           strategy="beforeInteractive"
         />
-      </head>
-      <body>
         <AuthProvider>
         <ThemeProvider>
           <Navigation />
-          <div style={{ display: 'flex', justifyContent: 'center', padding: '8px 0' }}>
-            <AdBanner slot="leaderboard" />
-          </div>
           <div className="main-content">
             {children}
           </div>

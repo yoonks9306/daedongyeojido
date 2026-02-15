@@ -49,5 +49,6 @@ export interface CommunityComment {
   postId: number;
   author: string;
   content: string;
+  score: number;
   createdAt: string;
 }

@@ -32,6 +32,7 @@ function toComment(row: Record<string, unknown>): CommunityComment {
     postId: row.post_id as number,
     author: row.author_name as string,
     content: row.content as string,
+    score: (row.score as number) ?? 0,
     createdAt: row.created_at as string,
   };
 }
@@ -58,7 +59,7 @@ export default async function CommunityPostDetailPage({ params }: Props) {
 
   const { data: commentsRows } = await supabase
     .from('comments')
-    .select('id, post_id, author_name, content, created_at')
+    .select('id, post_id, author_name, content, score, created_at')
     .eq('post_id', postId)
     .order('created_at', { ascending: true });
 

@@ -167,3 +167,96 @@
 .metaIcon svg {
   opacity: 0.6;
 }
+
+/* ---- Post vote bar ---- */
+.postVoteBar {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  margin-top: var(--spacing-4);
+  padding-top: var(--spacing-3);
+  border-top: 1px solid var(--color-border-subtle);
+}
+
+.voteBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-sm);
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 4px 8px;
+  transition: all var(--transition-fast);
+}
+.voteBtn:hover { color: var(--color-text-primary); border-color: var(--color-text-muted); }
+.voteBtnUpActive { color: var(--color-accent); border-color: var(--color-accent); }
+.voteBtnDownActive { color: #64b5f6; border-color: #64b5f6; }
+
+.voteScore {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-semibold);
+  min-width: 24px;
+  text-align: center;
+}
+
+/* ---- Form footer ---- */
+.formFooter {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: var(--spacing-2);
+}
+
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
+/* ---- Comment with vote column ---- */
+.commentItem {
+  display: flex;
+  gap: var(--spacing-3);
+  border-top: 1px solid var(--color-border-subtle);
+  padding: var(--spacing-3) 0;
+}
+
+.commentVoteCol {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.commentVoteBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  padding: 2px;
+  border-radius: var(--border-radius-sm);
+  transition: color var(--transition-fast);
+}
+.commentVoteBtn:hover { color: var(--color-text-primary); }
+
+.commentVoteScore {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+  min-width: 16px;
+  text-align: center;
+}
+
+.commentBody {
+  flex: 1;
+  min-width: 0;
+}
