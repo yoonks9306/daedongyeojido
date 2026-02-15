@@ -43,6 +43,9 @@ export default async function CommunityPostDetailPage({ params }: Props) {
     notFound();
   }
 
+  // Increment view count first, then fetch (so the returned count includes this visit)
+  await supabaseAdmin.rpc('increment_views', { row_id: postId });
+
   const { data: postRow } = await supabase
     .from('community_posts')
     .select('id, title, content, author_name, category, upvotes, views, comment_count, tags, created_at')
@@ -52,9 +55,6 @@ export default async function CommunityPostDetailPage({ params }: Props) {
   if (!postRow) {
     notFound();
   }
-
-  // Increment view count (fire-and-forget, using admin to bypass RLS)
-  void supabaseAdmin.rpc('increment_views', { row_id: postId });
 
   const { data: commentsRows } = await supabase
     .from('comments')
