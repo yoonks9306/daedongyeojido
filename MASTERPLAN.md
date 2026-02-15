@@ -10,36 +10,44 @@
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **AdSense + Community voting session** (`a506672`):
-  - Google AdSense script integrated (`ca-pub-1126883662685001`, `beforeInteractive`)
-  - AdBanner.tsx: real `<ins class="adsbygoogle">` tags (placeholder 제거)
-  - View count bug fix: `await` RPC before fetch (`b019968`)
-  - Anonymous comment option (checkbox + backend)
-  - Comment upvote/downvote system (comment_votes table, RPC, API)
-  - Post upvote/downvote buttons in detail page
-  - Leaderboard ad removed from layout (승인 전 빈 공간 방지)
+- **Wiki UX stabilization + footnote/ads polish session** (this session):
+  - Unified wiki/guide TOC color behavior (visited-link lock issue fixed with explicit `:visited` and active styles)
+  - Added in-page navigation behavior using `history.replaceState` so heading clicks do not pollute browser back history
+  - Implemented Namu-style footnote sample migration for `kakao-t` (`supabase/migrations/2026-02-16-kakao-t-footnotes-sample.sql`)
+  - References style finalized to show only hyperlinked `[n]` labels (no numeric prefix / no bullet marker)
+  - Removed inline wiki body ad, kept sidebar ad under `CONTENTS`
+  - Refactored `SidebarToC` heading ID normalization to avoid duplicate React keys (`heading-2` issue fixed)
+  - Build verified repeatedly after each change set (`npm run build` pass)
 
 ### Currently blocked on
-- **AdSense site verification 실패**: Google 크롤러가 사이트 소유권 확인 불가. `beforeInteractive` 적용했으나 미해결. ads.txt 방식 시도 필요할 수 있음.
-- **DB migration 필요**: `supabase/migrations/2026-02-16-comment-votes.sql` 실행해야 댓글 투표 기능 작동
+- **Wiki heading interaction first-load bug (open)**: On first entry to some wiki documents, collapse/jump logic may not bind until manual refresh; issue remains partially reproducible and needs root-cause fix.
+- **AdSense approval/display status pending verification**: ads/code wiring is in place, but incoming agent should verify if approval is complete and if live ad fill is stable on production.
+- **DB migration apply check**:
+  - `supabase/migrations/2026-02-16-comment-votes.sql` (if still unapplied)
+  - `supabase/migrations/2026-02-16-kakao-t-footnotes-sample.sql` (to reflect latest footnote/reference format)
 
 ### Key decision
 - 콘텐츠(위키 100+편 확장 등)는 나중에 채워넣기로 하고, **구조/기능 완성에 먼저 집중**하기로 결정
 
 ### Next task for incoming agent
-**AdSense 해결 (최우선):**
-1. AdSense site verification 문제 해결 (ads.txt 방식 시도: `public/ads.txt` 생성)
-2. 승인 후 leaderboard ad를 layout에 다시 추가
-
-**Phase 5 continued (Monetization):**
-1. AdSense 승인 완료 후 광고 슬롯 최적화
-
-**Phase 7 (Polish):**
-1. Mobile hamburger nav
-2. Loading states / skeleton screens
-3. Error boundaries / 404 page
+1. **Fix wiki first-load heading bind issue**:
+   - Reproduce reliably on route transitions without refresh
+   - Stabilize ToC initialization/collapse binding without relying on remount hacks
+   - Keep current back-button behavior (`replaceState`) intact
+2. **Check AdSense current state on production**:
+   - Confirm approval status in AdSense dashboard
+   - Confirm real ads render (not placeholders) on leaderboard/sidebar slots
+   - If approved and stable, decide whether to reintroduce leaderboard placement in layout
+3. **DB/application sync verification**:
+   - Run/verify required migrations (comment votes + KakaoT footnote sample)
+   - Confirm content rendering matches latest reference formatting and link behavior
+4. Phase 7 polish backlog:
+   - Mobile hamburger nav
+   - Loading states / skeleton screens
+   - Error boundaries / 404 page
 
 ### Recent git commits
+- `TBD` chore: handoff update + wiki toc/footnote/guide toc stabilization (commit in this session)
 - `a506672` feat: add comment voting, anonymous comments, post vote bar
 - `8aafe8c` fix: AdSense beforeInteractive + remove empty leaderboard
 - `4d0f485` feat: integrate Google AdSense
@@ -276,6 +284,8 @@ Defined in `src/app/globals.css`.
 | 4 | Mobile: no hamburger nav | Open | Tabs shrink but no dedicated mobile nav pattern |
 | 5 | Best post algorithm is client-side sort | Resolved | Score-based ranking (`upvotes × recency_weight`) implemented |
 | 6 | Email/password login disabled | Resolved | Credentials auth + register API implemented |
+| 7 | Wiki heading UX first-load bind instability | Open | Some docs require manual refresh before collapse/jump hooks attach |
+| 8 | AdSense approval/live fill status unclear | Open | Integration done; production approval/render state must be rechecked |
 
 ---
 

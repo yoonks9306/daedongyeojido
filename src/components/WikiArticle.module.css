@@ -2,7 +2,7 @@
 
 .articlePage {
   display: grid;
-  grid-template-columns: var(--sidebar-width) 1fr;
+  grid-template-columns: minmax(260px, 300px) 1fr;
   grid-template-areas: "sidebar main";
   gap: var(--spacing-8);
   max-width: var(--content-max-width);
@@ -22,6 +22,7 @@
   display: flex;
   flex-direction: column;
   gap: var(--spacing-4);
+  width: 100%;
 }
 
 .tocBox {
@@ -55,6 +56,9 @@
   text-decoration: none;
   line-height: 1.45;
 }
+.tocLink:visited {
+  color: var(--color-text-secondary);
+}
 .tocLink:hover {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
@@ -65,9 +69,73 @@
   background: color-mix(in srgb, var(--color-accent), transparent 90%);
   font-weight: var(--font-weight-medium);
 }
+.tocLinkActive:visited {
+  color: var(--color-accent) !important;
+}
 .tocLinkH3 {
   padding-left: var(--spacing-5);
   font-size: var(--font-size-xs);
+}
+
+.collapsibleHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--spacing-3);
+  cursor: pointer;
+  user-select: none;
+  color: inherit;
+}
+
+.collapsibleHeading:hover,
+.collapsibleHeading:active,
+.collapsibleHeading:focus {
+  color: inherit;
+}
+
+.headingLabel {
+  min-width: 0;
+  color: inherit;
+}
+
+.headingActions {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  flex-shrink: 0;
+}
+
+.sectionToggle {
+  color: var(--color-text-muted);
+  font-size: 1.05rem;
+  line-height: 1;
+}
+
+.sectionToggleBtn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1.65rem;
+  height: 1.65rem;
+  border: 0;
+  border-radius: var(--border-radius-sm);
+  background: transparent;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sectionToggleBtn:hover,
+.sectionToggleBtn:focus-visible {
+  background: var(--color-bg-tertiary);
+}
+
+.sectionBody {
+  margin-bottom: var(--spacing-2);
+}
+
+.collapsed {
+  margin-bottom: var(--spacing-2);
 }
 
 /* ---- Main content area ---- */
@@ -162,6 +230,15 @@
 .articleBody {
   line-height: var(--line-height-relaxed);
   clear: both;
+}
+.articleBody h2[id],
+.articleBody h3[id] {
+  scroll-margin-top: calc(var(--nav-height) + var(--ad-banner-height) + var(--spacing-4));
+}
+.articleBody sup {
+  font-size: 0.72em;
+  vertical-align: super;
+  line-height: 0;
 }
 .articleBody::after {
   content: '';

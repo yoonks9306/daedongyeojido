@@ -25,7 +25,7 @@ export default function WikiArticle({ article, allArticles }: WikiArticleProps) 
     <div className={styles.articlePage}>
       {/* Sidebar: ToC + ad */}
       <aside className={styles.sidebar}>
-        <SidebarToC contentId="article-body" />
+        <SidebarToC contentId="article-body" observeKey={article.slug} />
         <AdBanner slot="rectangle" />
       </aside>
 

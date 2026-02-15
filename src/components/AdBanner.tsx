@@ -28,7 +28,7 @@ export default function AdBanner({ slot, className }: AdBannerProps) {
   }, []);
 
   return (
-    <div className={`${styles.adBanner} ${styles[slot]} ${className ?? ''}`}>
+    <div className={`${styles.adBanner} ${styles[slot]} ${className ?? ''}`} data-slot={slot}>
       <ins
         className="adsbygoogle"
         style={SLOT_STYLE[slot]}
@@ -36,6 +36,9 @@ export default function AdBanner({ slot, className }: AdBannerProps) {
         data-ad-format="auto"
         data-full-width-responsive="true"
       />
+      <span className={styles.adPlaceholder} aria-hidden="true">
+        {slot === 'leaderboard' ? '728 x 90 Leaderboard' : slot === 'rectangle' ? '300 x 250 Sidebar Ad' : '320 x 50 Mobile Ad'}
+      </span>
     </div>
   );
 }

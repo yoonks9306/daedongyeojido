@@ -71,6 +71,11 @@
   border-radius: var(--border-radius-md);
 }
 
+.leftLink:visited,
+.tocLink:visited {
+  color: var(--color-text-secondary);
+}
+
 .leftLinkActive {
   color: var(--color-text-primary);
   background: color-mix(in srgb, var(--color-accent), transparent 88%);
@@ -81,6 +86,16 @@
 .tocLink:hover {
   color: var(--color-text-primary);
   background: var(--color-bg-secondary);
+}
+
+.tocLinkActive {
+  color: var(--color-accent) !important;
+  background: color-mix(in srgb, var(--color-accent), transparent 90%);
+  font-weight: var(--font-weight-medium);
+}
+
+.tocLinkActive:visited {
+  color: var(--color-accent) !important;
 }
 
 .tocTitle {
@@ -150,6 +165,7 @@
   background: var(--color-bg-secondary);
   border-radius: var(--border-radius-md);
   padding: var(--spacing-4);
+  scroll-margin-top: calc(var(--nav-height) + var(--ad-banner-height) + var(--spacing-4));
 }
 
 .entryTitle {

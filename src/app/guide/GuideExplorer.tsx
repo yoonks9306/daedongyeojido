@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState, type MouseEvent } from 'react';
 import type { GuideTab } from '@/data/guide-content';
 import ExchangeRateWidget from './ExchangeRateWidget';
 import styles from './guide.module.css';
@@ -33,7 +33,80 @@ export default function GuideExplorer({
     return activeTab.groups[0];
   }, [activeTab, initialGroupId]);
 
+  const [activeEntryId, setActiveEntryId] = useState<string>(activeGroup?.entries[0]?.id ?? '');
+  const [scrollOffset, setScrollOffset] = useState(180);
+
+  const resolveScrollOffset = useCallback(() => {
+    const root = getComputedStyle(document.documentElement);
+    const nav = Number.parseInt(root.getPropertyValue('--nav-height'), 10) || 56;
+    const ad = Number.parseInt(root.getPropertyValue('--ad-banner-height'), 10) || 0;
+    setScrollOffset(nav + ad + 16);
+  }, []);
+
+  useEffect(() => {
+    resolveScrollOffset();
+    window.addEventListener('resize', resolveScrollOffset);
+    return () => window.removeEventListener('resize', resolveScrollOffset);
+  }, [resolveScrollOffset]);
+
+  useEffect(() => {
+    if (!activeGroup) return;
+    setActiveEntryId(activeGroup.entries[0]?.id ?? '');
+  }, [activeGroup]);
+
+  const updateActiveEntry = useCallback(() => {
+    if (!activeGroup || activeGroup.entries.length === 0) return;
+    const line = window.scrollY + scrollOffset + 2;
+    let candidate = activeGroup.entries[0]?.id ?? '';
+
+    for (const entry of activeGroup.entries) {
+      const el = document.getElementById(entry.id);
+      if (!el) continue;
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      if (top <= line) {
+        candidate = entry.id;
+      } else {
+        break;
+      }
+    }
+
+    setActiveEntryId(candidate);
+  }, [activeGroup, scrollOffset]);
+
+  useEffect(() => {
+    if (!activeGroup) return;
+
+    const syncFromHash = () => {
+      const hashId = decodeURIComponent(window.location.hash.replace('#', ''));
+      if (hashId && activeGroup.entries.some((entry) => entry.id === hashId)) {
+        setActiveEntryId(hashId);
+        return;
+      }
+      updateActiveEntry();
+    };
+
+    updateActiveEntry();
+    syncFromHash();
+
+    window.addEventListener('scroll', updateActiveEntry, { passive: true });
+    window.addEventListener('hashchange', syncFromHash);
+    return () => {
+      window.removeEventListener('scroll', updateActiveEntry);
+      window.removeEventListener('hashchange', syncFromHash);
+    };
+  }, [activeGroup, updateActiveEntry]);
+
   if (!activeTab || !activeGroup) return null;
+
+  const onTocClick = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+    event.preventDefault();
+    const el = document.getElementById(id);
+    if (!el) return;
+    const y = el.getBoundingClientRect().top + window.scrollY - scrollOffset;
+    window.scrollTo({ top: y, behavior: 'smooth' });
+    history.replaceState(null, '', `#${id}`);
+    setActiveEntryId(id);
+  };
 
   return (
     <div className={styles.guidePage}>
@@ -98,7 +171,11 @@ export default function GuideExplorer({
           <ul className={styles.tocList}>
             {activeGroup.entries.map((entry) => (
               <li key={entry.id}>
-                <a className={styles.tocLink} href={`#${entry.id}`}>
+                <a
+                  className={`${styles.tocLink} ${activeEntryId === entry.id ? styles.tocLinkActive : ''}`}
+                  href={`#${entry.id}`}
+                  onClick={(event) => onTocClick(event, entry.id)}
+                >
                   {entry.title}
                 </a>
               </li>

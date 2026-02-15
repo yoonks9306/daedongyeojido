@@ -199,3 +199,21 @@
 - Added `public/ads.txt` for AdSense ownership verification
 - ads.txt content: `google.com, pub-1126883662685001, DIRECT, f08c47fec0942fa0`
 - Next step: redeploy and verify `https://daedongyeojido.vercel.app/ads.txt` is publicly reachable
+
+## 2026-02-16 — Codex (GPT-5) — Wiki ToC/heading refactor + handoff hardening
+
+- Refined wiki heading UX in `SidebarToC.tsx`:
+  - Added stable in-page jump handling via `replaceState` so heading clicks do not stack browser history entries
+  - Preserved collapse toggle behavior (header field jump + right-side arrow collapse split)
+  - Added heading ID normalization to avoid duplicate React keys (`heading-2` warning fix)
+- Synced Guide right-side `On this page` behavior with wiki TOC conventions (visited color + active highlight consistency)
+- Removed inline wiki body ad and kept sidebar ad under `CONTENTS` as requested
+- Added/updated `supabase/migrations/2026-02-16-kakao-t-footnotes-sample.sql`:
+  - Namu-style superscript/reference sample
+  - Reference label formatting changed to plain `[n]` hyperlink style (no auto-number or bullet marker)
+- Verified builds after each major patch (`npm run build` pass)
+- Remaining unresolved issue carried forward:
+  - On first document entry (without refresh), heading collapse/jump binding can still fail intermittently on some route transitions
+  - Next agent should prioritize root-cause fix for this initialization race
+- Monetization handoff note:
+  - AdSense wiring is present, but incoming agent must verify real approval + live ad fill status on production
