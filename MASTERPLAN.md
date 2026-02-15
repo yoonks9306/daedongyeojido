@@ -47,7 +47,7 @@
    - Error boundaries / 404 page
 
 ### Recent git commits
-- `TBD` chore: handoff update + wiki toc/footnote/guide toc stabilization (commit in this session)
+- `1c4f8da` fix: stabilize wiki toc behavior and handoff docs
 - `a506672` feat: add comment voting, anonymous comments, post vote bar
 - `8aafe8c` fix: AdSense beforeInteractive + remove empty leaderboard
 - `4d0f485` feat: integrate Google AdSense
