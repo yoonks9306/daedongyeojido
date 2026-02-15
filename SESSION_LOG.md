@@ -193,3 +193,9 @@
 - Added post upvote/downvote buttons at bottom of post detail content area
 - DB migration required: `supabase/migrations/2026-02-16-comment-votes.sql`
 - Commits: `b019968` (view count fix), `4d0f485` (AdSense), `8aafe8c` (AdSense fix), `a506672` (voting + anonymous)
+
+## 2026-02-16 — Codex (GPT-5) — AdSense verification follow-up
+
+- Added `public/ads.txt` for AdSense ownership verification
+- ads.txt content: `google.com, pub-1126883662685001, DIRECT, f08c47fec0942fa0`
+- Next step: redeploy and verify `https://daedongyeojido.vercel.app/ads.txt` is publicly reachable
