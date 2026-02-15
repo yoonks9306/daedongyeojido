@@ -57,3 +57,15 @@
 - **GitHub OAuth verified working locally** (login → avatar in nav → sign out)
 - Vercel env vars set; **production OAuth verified on daedongyeojido.vercel.app**
 - **Phase 2 COMPLETE**
+
+## 2026-02-16 — Claude (Sonnet) — Phase 3: Supabase Database
+
+- Supabase project created (`jjdtxdsurkcuxwauusfc`); Vercel integration enabled (Production ON)
+- `supabase/schema.sql`: tables `wiki_articles`, `community_posts`, `votes`, `comments` with RLS policies
+- `supabase/seed.ts`: seeded 20 wiki articles + 15 community posts from static TypeScript data files
+- `src/lib/supabase.ts`: Supabase client using `NEXT_PUBLIC_` env vars
+- `wiki/[slug]/page.tsx`: SSG via `generateStaticParams` now queries Supabase (not static import)
+- `wiki/page.tsx` + `WikiIndexClient.tsx`: server component fetches, client handles search/filter
+- `community/page.tsx` + `CommunityClient.tsx`: server component fetches, client handles tabs
+- Best post algorithm: recency window filter client-side (daily=24h, weekly=7d, monthly=30d)
+- Build: 27 static pages, 0 TypeScript errors — `60ae5ce`

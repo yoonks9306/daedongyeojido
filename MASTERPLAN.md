@@ -3,36 +3,38 @@
 > **How to use this file**: Single source of truth for all contributors and AI agents.
 > Before starting ANY work: read this file top to bottom.
 > Before ending ANY session: update Section 0 (Current State) and relevant milestone checkboxes.
-> Last updated: 2026-02-15
+> Last updated: 2026-02-16
 
 ---
 
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **Phase 2 Authentication**: FULLY COMPLETE — local + production verified
-  - GitHub OAuth working on both `localhost:3000` and `daedongyeojido.vercel.app`
-  - Vercel env vars set: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, `NEXTAUTH_URL`
-  - Google OAuth not set up (skipped — GitHub alone sufficient for now)
+- **Phase 3 Database (partial)**: Supabase connected, schema live, data seeded, pages wired
+  - Supabase project: `jjdtxdsurkcuxwauusfc` — schema deployed, RLS enabled
+  - 20 wiki articles + 15 community posts seeded from static data
+  - `wiki/page`, `wiki/[slug]`, `community/page` all fetch from Supabase (SSG preserved)
+  - Server Component → Client Component pattern for wiki + community pages
+  - `.env.local` has all Supabase env vars; Vercel integration syncs to production
 
 ### Currently blocked on
-- Nothing. Phase 2 done. Ready for Phase 3.
+- **Vercel production env vars**: Supabase Vercel integration set Production=ON, Development=ON
+  - Need to confirm `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY` are in Vercel dashboard
+- **`SUPABASE_SERVICE_ROLE_KEY`**: NOT in Vercel — only needed for seed script (never expose to client)
 
 ### Next task for incoming agent
-**Phase 3 — Supabase Database**
-1. Create Supabase project at supabase.com
-2. Connect Supabase to Vercel (via Vercel Integration or env vars)
-3. Design schema: `User`, `WikiArticle`, `CommunityPost`, `Vote`, `Comment`
-4. Install `@supabase/supabase-js` + `@supabase/ssr`
-5. Create `src/lib/supabase.ts` client
-6. Seed DB from existing static data files in `src/data/`
-7. Replace static data imports with Supabase queries
+**Phase 3 continued — Backend features:**
+1. Community post submission form + `/api/v1/community/posts` POST endpoint (auth required)
+2. Upvote persistence: `/api/v1/community/posts/[id]/vote` POST/DELETE, update `votes` table
+3. Protected routes: redirect unauthenticated users away from post-creation
+4. Wiki article edit form (authenticated users only)
+5. Comment system on community posts
 
 ### Recent git commits
+- `60ae5ce` feat: Phase 3 — Supabase database integration
+- `ff29583` chore: Phase 2 complete — production OAuth verified
 - `49ab0d9` chore: update MASTERPLAN + SESSION_LOG — Phase 2 local OAuth verified
 - `6306655` docs: add SESSION_LOG.md and fix stale path in AGENT_INSTRUCTION.md
-- `04d2b2a` chore: add agent handoff protocol + fix page title
-- `285045d` feat: add NextAuth.js v5 authentication (Google + GitHub OAuth)
 
 ---
 
@@ -206,14 +208,16 @@ Defined in `src/app/globals.css`.
 - [ ] Protected routes: community posting, wiki editing
 - [ ] User profile page (`/profile/[username]`) — Phase 3 dependency
 
-### Phase 3 — Database & Backend 🔴 NOT STARTED
-- [ ] Choose DB: **Supabase** (recommended — easy Vercel integration)
-- [ ] Schema: User, WikiArticle, CommunityPost, Vote, Comment
-- [ ] Migrate static data files → DB seed scripts
-- [ ] API routes: `/api/v1/wiki/`, `/api/v1/community/`, `/api/v1/auth/`
+### Phase 3 — Database & Backend 🟡 IN PROGRESS
+- [x] Choose DB: **Supabase** (Vercel integration active)
+- [x] Schema: wiki_articles, community_posts, votes, comments (RLS enabled)
+- [x] Migrate static data files → DB seed scripts (`supabase/seed.ts`, 20 articles + 15 posts)
+- [x] `src/lib/supabase.ts` client created
+- [x] wiki + community pages fetch from Supabase (SSG preserved)
+- [ ] API routes: `/api/v1/community/` POST (new post), `/api/v1/community/[id]/vote`
 - [ ] Community post submission form + POST endpoint
 - [ ] Upvote persistence (currently UI-only, no backend)
-- [ ] Best posts algorithm (score = upvotes × recency_weight)
+- [ ] Best posts algorithm (score = upvotes × recency_weight) — recency filter done client-side
 - [ ] Wiki article create/edit form (for authenticated users)
 - [ ] Comment system
 - [ ] Email/password auth (requires User table in DB)
