@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useState, FormEvent } from 'react';
+import { useSession, signOut } from 'next-auth/react';
 import { useTheme } from './ThemeProvider';
 import styles from './Navigation.module.css';
 
@@ -10,6 +11,7 @@ export default function Navigation() {
   const pathname = usePathname();
   const router = useRouter();
   const { theme, toggleTheme } = useTheme();
+  const { data: session } = useSession();
   const [query, setQuery] = useState('');
 
   function isActive(href: string) {
@@ -73,12 +75,36 @@ export default function Navigation() {
             {theme === 'light' ? '🌙' : '☀️'}
           </button>
 
-          <Link href="/login" className={styles.loginBtn} aria-label="Login">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-              <circle cx="12" cy="7" r="4"/>
-            </svg>
-          </Link>
+          {session?.user ? (
+            <button
+              onClick={() => signOut({ callbackUrl: '/' })}
+              className={styles.loginBtn}
+              aria-label="Sign out"
+              title={`Signed in as ${session.user.name ?? session.user.email}`}
+            >
+              {session.user.image ? (
+                <img
+                  src={session.user.image}
+                  alt={session.user.name ?? 'User'}
+                  width={24}
+                  height={24}
+                  style={{ borderRadius: '50%', display: 'block' }}
+                />
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                  <circle cx="12" cy="7" r="4"/>
+                </svg>
+              )}
+            </button>
+          ) : (
+            <Link href="/login" className={styles.loginBtn} aria-label="Login">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                <circle cx="12" cy="7" r="4"/>
+              </svg>
+            </Link>
+          )}
         </div>
       </nav>
 

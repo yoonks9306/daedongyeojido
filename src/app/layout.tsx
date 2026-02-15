@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { ThemeProvider } from '@/components/ThemeProvider';
+import AuthProvider from '@/components/AuthProvider';
 import Navigation from '@/components/Navigation';
 import './globals.css';
 
@@ -17,6 +18,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="en">
       <body>
+        <AuthProvider>
         <ThemeProvider>
           <Navigation />
           <div className="main-content">
@@ -37,6 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             </p>
           </footer>
         </ThemeProvider>
+        </AuthProvider>
       </body>
     </html>
   );
