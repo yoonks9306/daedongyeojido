@@ -10,35 +10,29 @@
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **Phase 2 Authentication**: NextAuth.js v5 fully wired up + locally verified
-  - GitHub OAuth working locally (login → avatar in nav → sign out)
-  - `.env.local` filled: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
-  - Google OAuth credentials not yet set up (optional — GitHub alone is fine for now)
-  - `SESSION_LOG.md` created for chronological agent history
-  - `AGENT_INSTRUCTION.md` stale `frontend/` path fixed
+- **Phase 2 Authentication**: FULLY COMPLETE — local + production verified
+  - GitHub OAuth working on both `localhost:3000` and `daedongyeojido.vercel.app`
+  - Vercel env vars set: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`, `NEXTAUTH_URL`
+  - Google OAuth not set up (skipped — GitHub alone sufficient for now)
 
-### Currently blocked on (needs human action)
-- **Vercel production env vars not set** → OAuth won't work on `daedongyeojido.vercel.app` yet
-  1. Vercel Dashboard → Settings → Environment Variables → add:
-     - `AUTH_SECRET` (same value as .env.local)
-     - `AUTH_GITHUB_ID` + `AUTH_GITHUB_SECRET`
-     - `NEXTAUTH_URL=https://daedongyeojido.vercel.app`
-  2. GitHub OAuth App → add production callback URL:
-     `https://daedongyeojido.vercel.app/api/auth/callback/github`
-  3. Redeploy on Vercel after adding env vars
+### Currently blocked on
+- Nothing. Phase 2 done. Ready for Phase 3.
 
 ### Next task for incoming agent
-1. Confirm Vercel env vars set + production OAuth working (user action above)
-2. Proceed to **Phase 3 — Database** (Supabase recommended)
-   - Create Supabase project, connect to Vercel
-   - Schema: User, WikiArticle, CommunityPost, Vote, Comment
-   - Migrate static `.ts` data files → DB seed
+**Phase 3 — Supabase Database**
+1. Create Supabase project at supabase.com
+2. Connect Supabase to Vercel (via Vercel Integration or env vars)
+3. Design schema: `User`, `WikiArticle`, `CommunityPost`, `Vote`, `Comment`
+4. Install `@supabase/supabase-js` + `@supabase/ssr`
+5. Create `src/lib/supabase.ts` client
+6. Seed DB from existing static data files in `src/data/`
+7. Replace static data imports with Supabase queries
 
 ### Recent git commits
+- `49ab0d9` chore: update MASTERPLAN + SESSION_LOG — Phase 2 local OAuth verified
 - `6306655` docs: add SESSION_LOG.md and fix stale path in AGENT_INSTRUCTION.md
 - `04d2b2a` chore: add agent handoff protocol + fix page title
 - `285045d` feat: add NextAuth.js v5 authentication (Google + GitHub OAuth)
-- `b8bfc87` fix: add vercel.json and rename package to korwiki
 
 ---
 
@@ -200,7 +194,7 @@ Defined in `src/app/globals.css`.
 - [x] Ad slots (leaderboard below nav, rectangle in wiki sidebar)
 - [x] Login page UI (email/pass stub, Google + GitHub OAuth buttons)
 
-### Phase 2 — Authentication 🟡 IN PROGRESS
+### Phase 2 — Authentication ✅ COMPLETE
 - [x] Install NextAuth.js v5 (`next-auth@beta`)
 - [x] Create `src/auth.ts` with Google + GitHub providers
 - [x] Create `/api/auth/[...nextauth]/route.ts`
@@ -208,7 +202,7 @@ Defined in `src/app/globals.css`.
 - [x] Update `/login/page.tsx` to use real `signIn()` (OAuth) + error message for email
 - [x] Session-aware Navigation (avatar when logged in, click to sign out)
 - [x] Fill OAuth credentials in `.env.local` (GitHub OAuth verified locally)
-- [ ] Add env vars to Vercel dashboard + configure production callback URL
+- [x] Add env vars to Vercel dashboard + configure production callback URL (verified working)
 - [ ] Protected routes: community posting, wiki editing
 - [ ] User profile page (`/profile/[username]`) — Phase 3 dependency
 

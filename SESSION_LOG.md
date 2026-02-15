@@ -55,4 +55,5 @@
 - Created `SESSION_LOG.md` (this file)
 - GitHub OAuth App created; `.env.local` filled with AUTH_SECRET + GitHub credentials
 - **GitHub OAuth verified working locally** (login → avatar in nav → sign out)
-- Remaining: Vercel env vars + production callback URL (human action, see MASTERPLAN.md § 0)
+- Vercel env vars set; **production OAuth verified on daedongyeojido.vercel.app**
+- **Phase 2 COMPLETE**
