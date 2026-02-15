@@ -67,7 +67,7 @@ Note: These personas cannot be invoked via `subagent_type` in the Task tool — 
 ## Build Command
 
 ```bash
-cd /Users/jamesy/Documents/대동여지도/frontend
+cd /Users/jamesy/Documents/대동여지도
 export PATH="/opt/homebrew/bin:$PATH"
 npm run build
 ```

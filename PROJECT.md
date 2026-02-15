@@ -40,42 +40,44 @@ Brand voice: helpful, dense, insider-knowledge-forward. Not a tourist brochure �
 ## 3. Directory Structure
 
 ```
-대동여지도/
+daedongyeojido/             ← git 루트 = Next.js 앱 루트
+├── src/
+│   ├── app/
+│   │   ├── layout.tsx          ← Root layout (ThemeProvider + Navigation + footer)
+│   │   ├── page.tsx            ← Guide tab (landing page)
+│   │   ├── globals.css         ← Full design system (CSS custom properties)
+│   │   ├── wiki/
+│   │   │   ├── page.tsx        ← Wiki index (search + category filter)
+│   │   │   └── [slug]/page.tsx ← Individual wiki article (SSG, 20 pages)
+│   │   ├── community/
+│   │   │   ├── page.tsx        ← Community board (tabs: All/Daily/Weekly/Monthly Best)
+│   │   │   └── community.module.css
+│   │   ├── login/
+│   │   │   └── page.tsx        ← Login + signup toggle (auth NOT connected)
+│   │   └── guide/
+│   │       └── guide.module.css
+│   ├── components/
+│   │   ├── Navigation.tsx      ← Sticky nav: logo, tabs, search, theme toggle, login icon
+│   │   ├── Navigation.module.css
+│   │   ├── ThemeProvider.tsx   ← Dark/light mode context (localStorage + prefers-color-scheme)
+│   │   ├── WikiArticle.tsx     ← Article renderer (sidebar ToC + infobox + body)
+│   │   ├── WikiArticle.module.css
+│   │   ├── SidebarToC.tsx      ← IntersectionObserver ToC (active section tracking)
+│   │   ├── AdBanner.tsx        ← Ad placeholder (leaderboard 728×90, rectangle 300×250)
+│   │   └── AdBanner.module.css
+│   ├── data/
+│   │   ├── wiki-articles.ts    ← 20 seed articles (static, no DB)
+│   │   ├── guide-content.ts    ← 7 guide sections
+│   │   └── community-posts.ts  ← 15 mock community posts
+│   └── types/
+│       └── index.ts            ← Shared TypeScript interfaces
+├── public/
+├── package.json
+├── next.config.ts
+├── tsconfig.json
+├── .gitignore
 ├── PROJECT.md              ← YOU ARE HERE — central tracker
 ├── CLAUDE.md               ← AI agent coding instructions
-├── frontend/               ← Next.js 15 app
-│   ├── src/
-│   │   ├── app/
-│   │   │   ├── layout.tsx          ← Root layout (ThemeProvider + Navigation + footer)
-│   │   │   ├── page.tsx            ← Guide tab (landing page)
-│   │   │   ├── globals.css         ← Full design system (CSS custom properties)
-│   │   │   ├── wiki/
-│   │   │   │   ├── page.tsx        ← Wiki index (search + category filter)
-│   │   │   │   └── [slug]/page.tsx ← Individual wiki article (SSG, 20 pages)
-│   │   │   ├── community/
-│   │   │   │   ├── page.tsx        ← Community board (tabs: All/Daily/Weekly/Monthly Best)
-│   │   │   │   └── community.module.css
-│   │   │   ├── login/
-│   │   │   │   └── page.tsx        ← Login + signup toggle (auth NOT connected)
-│   │   │   └── guide/
-│   │   │       └── guide.module.css
-│   │   ├── components/
-│   │   │   ├── Navigation.tsx      ← Sticky nav: logo, tabs, search, theme toggle, login icon
-│   │   │   ├── Navigation.module.css
-│   │   │   ├── ThemeProvider.tsx   ← Dark/light mode context (localStorage + prefers-color-scheme)
-│   │   │   ├── WikiArticle.tsx     ← Article renderer (sidebar ToC + infobox + body)
-│   │   │   ├── WikiArticle.module.css
-│   │   │   ├── SidebarToC.tsx      ← IntersectionObserver ToC (active section tracking)
-│   │   │   ├── AdBanner.tsx        ← Ad placeholder (leaderboard 728×90, rectangle 300×250)
-│   │   │   └── AdBanner.module.css
-│   │   ├── data/
-│   │   │   ├── wiki-articles.ts    ← 20 seed articles (static, no DB)
-│   │   │   ├── guide-content.ts    ← 7 guide sections
-│   │   │   └── community-posts.ts  ← 15 mock community posts
-│   │   └── types/
-│   │       └── index.ts            ← Shared TypeScript interfaces
-│   ├── package.json
-│   └── next.config.ts
 ├── docs/
 │   └── decisions/          ← Architecture Decision Records (ADR)
 └── .claude/
@@ -217,13 +219,13 @@ Defined in `frontend/src/app/globals.css`.
 - Never add a DB without updating the tech stack section above.
 - Always mark tasks complete in this file when done.
 - When adding new pages/components, add them to the directory structure above.
-- Build must pass: `cd frontend && export PATH="/opt/homebrew/bin:$PATH" && npm run build`
+- Build must pass: `export PATH="/opt/homebrew/bin:$PATH" && npm run build` (from repo root)
 
 ### Environment
 - Node.js: v25.6.1 at `/opt/homebrew/bin/node`
 - Always prefix npm/npx/node commands with: `export PATH="/opt/homebrew/bin:$PATH" &&`
-- Primary working dir: `/Users/jamesy/Documents/Study` (Claude's default)
-- Project root: `/Users/jamesy/Documents/대동여지도/`
+- Project root (= Next.js root): `/Users/jamesy/Documents/대동여지도/`
+- Claude's primary working dir: `/Users/jamesy/Documents/Study` (always use absolute paths)
 
 ---
 
