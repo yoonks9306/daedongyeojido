@@ -156,3 +156,11 @@
 - Updated Guide explorer flow to render one selected domain document at a time
 - Expanded guide content density with additional real-world friction entries across all major domains
 - Build verified after changes: 37 routes generated, TypeScript pass
+
+## 2026-02-16 — Codex (GPT-5) — Phase 4: Wiki expansion batch 1
+
+- Added migration `supabase/migrations/2026-02-16-wiki-expansion-batch-1.sql`
+- Insert/upsert payload includes 18 practical wiki articles targeting top foreigner pain points
+- Each new article includes infobox, structured section headings, related article links, tags, and references section
+- Updated `supabase/DB_APPLY_CHECKLIST.md` with the new migration run order and row-count verification query
+- Migration designed idempotent (`on conflict (slug) do update`) for safe reruns

@@ -11,22 +11,25 @@
 
 ### Last completed work
 - **Phase 4 (Guide IA + UX expansion)**: docs-style Guide redesign and money widget
-  - Rebuilt Guide into 8 top categories (`Start Here` → `Work & Study`) with expanded field-friction content
+  - Rebuilt Guide into 8 top categories (`Start Here` -> `Work & Study`) with expanded field-friction content
   - Implemented Claude-docs style layout: top tabs + left category nav + right "On this page"
   - Added real-time Money rate widget (USD/JPY/CNY + currency dropdown) via `/api/v1/exchange-rates`
   - Refactored guide data model to tab/group/entry structure for large-scale content growth
-  - Build verified after changes: 37 routes generated, TypeScript pass
+- **Phase 4 (Wiki expansion batch 1)**
+  - Added idempotent migration `supabase/migrations/2026-02-16-wiki-expansion-batch-1.sql`
+  - Added 18 practical wiki articles (foreign visitor pain-point focused) with infobox, tags, related links, and references sections
+  - Updated `supabase/DB_APPLY_CHECKLIST.md` with apply order + verification query
 
 ### Currently blocked on
-- No active blocker reported in this session.
-- User confirmed Supabase migrations applied (`user_identities`, `local_auth_users`) and Vercel env vars already configured.
+- No code blocker. Pending manual DB apply for `2026-02-16-wiki-expansion-batch-1.sql` in Supabase SQL Editor to make new wiki docs visible.
 
 ### Next task for incoming agent
 **Phase 4 continued:**
-1. Expand wiki content (toward 100+ articles)
-2. Expand guide sections and practical travel checklists (city-specific and scenario packs)
-3. Optional hardening: ownership/role guard for wiki edit API
-4. Optional hardening: initial voted-state preload on community list
+1. Apply wiki expansion migration on Supabase and verify 18 rows inserted
+2. Expand wiki content batch 2 (another 20-30 documents)
+3. Expand guide sections and practical travel checklists (city-specific and scenario packs)
+4. Optional hardening: ownership/role guard for wiki edit API
+5. Optional hardening: initial voted-state preload on community list
 
 ### Recent git commits
 - `60ae5ce` feat: Phase 3 — Supabase database integration
