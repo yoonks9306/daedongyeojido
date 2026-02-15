@@ -47,7 +47,7 @@ Note: These personas cannot be invoked via `subagent_type` in the Task tool — 
 
 ## CSS / Design Rules (CDO)
 
-- All design tokens are in `frontend/src/app/globals.css`
+- All design tokens are in `src/app/globals.css`
 - Color: `--color-accent: #c0392b` (Korean red) — do not introduce other accent colors
 - Dark mode is the **default** theme
 - Layout: desktop-first, responsive breakpoints at 1024px and 768px
@@ -78,10 +78,11 @@ Expected output: 26 static pages, 0 TypeScript errors.
 
 ## File Reading Order (new agent onboarding)
 
-1. `MASTERPLAN.md` — current status and what to work on
-2. `AGENT_INSTRUCTION.md` — this file (conventions)
-3. `frontend/src/app/globals.css` — design tokens
-4. The specific file(s) you're about to edit
+1. `MASTERPLAN.md` — current status and what to work on next
+2. `SESSION_LOG.md` — chronological history of what each session did
+3. `AGENT_INSTRUCTION.md` — this file (conventions)
+4. `src/app/globals.css` — design tokens
+5. The specific file(s) you're about to edit
 
 ---
 
