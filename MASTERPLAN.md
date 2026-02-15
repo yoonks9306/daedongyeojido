@@ -1,14 +1,80 @@
 # KorWiki — Project Tracker
 
-> **How to use this file**: This is the single source of truth for all contributors and AI agents.
-> Before starting any work, read this file top to bottom. Update relevant sections when you complete tasks.
+> **How to use this file**: Single source of truth for all contributors and AI agents.
+> Before starting ANY work: read this file top to bottom.
+> Before ending ANY session: update Section 0 (Current State) and relevant milestone checkboxes.
 > Last updated: 2026-02-15
+
+---
+
+## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
+
+### Last completed work
+- **Phase 2 Authentication**: NextAuth.js v5 installed and wired up
+  - `src/auth.ts` — Google + GitHub providers configured
+  - `src/app/api/auth/[...nextauth]/route.ts` — API handler
+  - `src/components/AuthProvider.tsx` — SessionProvider wrapper
+  - `src/app/layout.tsx` — wrapped with AuthProvider
+  - `src/app/login/page.tsx` — real `signIn()` calls (OAuth working, email/pass stubbed)
+  - `src/components/Navigation.tsx` — shows user avatar when logged in, click to sign out
+  - `.env.example` committed to repo
+
+### Currently blocked on (needs human action)
+- **OAuth credentials NOT yet filled in** → `.env.local` is empty. User needs to:
+  1. Generate `AUTH_SECRET`: run `openssl rand -base64 32`
+  2. Create Google OAuth app → get `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET`
+  3. Create GitHub OAuth app → get `AUTH_GITHUB_ID` + `AUTH_GITHUB_SECRET`
+  4. Fill in `.env.local` (never commit this file)
+  5. Add same env vars to Vercel Dashboard → Settings → Environment Variables
+
+### Next task for incoming agent
+1. Verify OAuth works locally after credentials are filled in
+2. Add `AUTH_SECRET` + OAuth credentials to Vercel environment variables (user will do this in Vercel UI)
+3. Proceed to **Phase 3 — Database** (Supabase recommended)
+
+### Recent git commits
+- `285045d` feat: add NextAuth.js v5 authentication (Google + GitHub OAuth)
+- `b8bfc87` fix: add vercel.json and rename package to korwiki
+- `77249e6` refactor: move Next.js app from frontend/ to repo root
+- `b1f0a81` rename CLAUDE.md → AGENT_INSTRUCTION.md, PROJECT.md → MASTERPLAN.md
+
+---
+
+## AGENT HANDOFF PROTOCOL
+
+> This section defines how AI agents hand off work to each other across context windows.
+
+### For the incoming agent (you, reading this)
+
+1. **Read Section 0** (above) — this tells you exactly where the previous agent stopped
+2. **Read `AGENT_INSTRUCTION.md`** — coding conventions and architecture rules
+3. **Read the specific files** mentioned in "Last completed work"
+4. **Do NOT re-do completed work** — check the milestone checkboxes carefully
+5. **Start with "Next task for incoming agent"** unless the user gives new instructions
+
+### For the outgoing agent (you, finishing a session)
+
+Before your context runs out, update Section 0:
+- Move completed items to "Last completed work"
+- Update "Currently blocked on" with any blockers
+- Update "Next task for incoming agent" with the precise next step
+- Update the "Recent git commits" list
+- Update milestone checkboxes below
+- Commit + push everything (never leave uncommitted work)
+
+### Handoff message template (for the user to give to the next agent)
+
+```
+Read MASTERPLAN.md Section 0 first, then AGENT_INSTRUCTION.md.
+The previous agent stopped at: [paste "Next task" from Section 0]
+Continue from there.
+```
 
 ---
 
 ## 1. What Is This?
 
-**KorWiki** (가칭, codename) is an English-language travel wiki for foreigners visiting Korea.
+**KorWiki** is an English-language travel wiki for foreigners visiting Korea.
 Modeled after **Namu Wiki (나무위키)** — dense, community-driven, well-structured.
 
 Brand voice: helpful, dense, insider-knowledge-forward. Not a tourist brochure — more like a Reddit power user's guide.
@@ -26,12 +92,12 @@ Brand voice: helpful, dense, insider-knowledge-forward. Not a tourist brochure �
 
 | Layer | Choice | Notes |
 |-------|--------|-------|
-| Framework | Next.js 15 (App Router) | TypeScript, `src/` dir, `@/*` alias |
+| Framework | Next.js 16 (App Router) | TypeScript, `src/` dir, `@/*` alias |
 | Styling | Custom CSS Modules | No Tailwind. CSS custom properties for theming |
-| Data (MVP) | Static `.ts` files | No DB yet — swap in Phase 2 |
-| Auth | Not yet implemented | Planned: NextAuth.js (Google + GitHub providers) |
-| Database | Not yet implemented | Planned: Prisma + PostgreSQL (or Supabase) |
-| Hosting | Not yet deployed | Planned: Vercel |
+| Auth | NextAuth.js v5 (Auth.js) | Google + GitHub OAuth — credentials pending |
+| Data (MVP) | Static `.ts` files | No DB yet — swap in Phase 3 |
+| Database | Not yet implemented | Planned: Supabase (recommended for Vercel) |
+| Hosting | Vercel | Connected to GitHub `main` branch, auto-deploy |
 | Ads | Placeholder slots | Planned: Google AdSense |
 | Node | v25.6.1 at `/opt/homebrew/bin` | Requires `export PATH="/opt/homebrew/bin:$PATH"` |
 
@@ -40,12 +106,13 @@ Brand voice: helpful, dense, insider-knowledge-forward. Not a tourist brochure �
 ## 3. Directory Structure
 
 ```
-daedongyeojido/             ← git 루트 = Next.js 앱 루트
+daedongyeojido/             ← git root = Next.js app root
 ├── src/
 │   ├── app/
-│   │   ├── layout.tsx          ← Root layout (ThemeProvider + Navigation + footer)
+│   │   ├── layout.tsx          ← Root layout (AuthProvider + ThemeProvider + Navigation + footer)
 │   │   ├── page.tsx            ← Guide tab (landing page)
 │   │   ├── globals.css         ← Full design system (CSS custom properties)
+│   │   ├── api/auth/[...nextauth]/route.ts  ← NextAuth handler
 │   │   ├── wiki/
 │   │   │   ├── page.tsx        ← Wiki index (search + category filter)
 │   │   │   └── [slug]/page.tsx ← Individual wiki article (SSG, 20 pages)
@@ -53,13 +120,14 @@ daedongyeojido/             ← git 루트 = Next.js 앱 루트
 │   │   │   ├── page.tsx        ← Community board (tabs: All/Daily/Weekly/Monthly Best)
 │   │   │   └── community.module.css
 │   │   ├── login/
-│   │   │   └── page.tsx        ← Login + signup toggle (auth NOT connected)
+│   │   │   └── page.tsx        ← Login page (Google + GitHub OAuth wired up)
 │   │   └── guide/
 │   │       └── guide.module.css
 │   ├── components/
-│   │   ├── Navigation.tsx      ← Sticky nav: logo, tabs, search, theme toggle, login icon
+│   │   ├── Navigation.tsx      ← Sticky nav: logo, tabs, search, theme toggle, user avatar/login
 │   │   ├── Navigation.module.css
 │   │   ├── ThemeProvider.tsx   ← Dark/light mode context (localStorage + prefers-color-scheme)
+│   │   ├── AuthProvider.tsx    ← SessionProvider wrapper (client component)
 │   │   ├── WikiArticle.tsx     ← Article renderer (sidebar ToC + infobox + body)
 │   │   ├── WikiArticle.module.css
 │   │   ├── SidebarToC.tsx      ← IntersectionObserver ToC (active section tracking)
@@ -69,30 +137,29 @@ daedongyeojido/             ← git 루트 = Next.js 앱 루트
 │   │   ├── wiki-articles.ts    ← 20 seed articles (static, no DB)
 │   │   ├── guide-content.ts    ← 7 guide sections
 │   │   └── community-posts.ts  ← 15 mock community posts
+│   ├── auth.ts                 ← NextAuth config (Google + GitHub providers)
 │   └── types/
 │       └── index.ts            ← Shared TypeScript interfaces
 ├── public/
-├── package.json
+├── package.json                ← name: "korwiki", next-auth@beta installed
 ├── next.config.ts
 ├── tsconfig.json
+├── vercel.json                 ← Explicit Vercel build config
+├── .env.local                  ← NEVER commit — fill in OAuth credentials
+├── .env.example                ← Template for .env.local (safe to commit)
 ├── .gitignore
-├── MASTERPLAN.md           ← YOU ARE HERE — central tracker
-├── AGENT_INSTRUCTION.md    ← AI agent coding instructions
-├── docs/
-│   └── decisions/          ← Architecture Decision Records (ADR)
+├── MASTERPLAN.md               ← YOU ARE HERE — central tracker
+├── AGENT_INSTRUCTION.md        ← AI agent coding instructions
 └── .claude/
-    ├── agents/             ← Custom AI sub-agents
-    │   ├── CTO.md          ← senior-clean-architect (blue, opus)
-    │   ├── CEO.md          ← wiki-operations-veteran (red, sonnet)
-    │   └── CDO.md          ← ui-ux-visual-master (yellow, sonnet)
-    └── settings.json       ← Project-level Claude permissions
+    ├── agents/                 ← Custom AI sub-agents
+    └── settings.json
 ```
 
 ---
 
 ## 4. Design System (Key Tokens)
 
-Defined in `frontend/src/app/globals.css`.
+Defined in `src/app/globals.css`.
 
 | Token | Value | Use |
 |-------|-------|-----|
@@ -113,13 +180,13 @@ Defined in `frontend/src/app/globals.css`.
 ## 5. Milestone Tracker
 
 ### Phase 0 — Project Setup ✅ COMPLETE
-- [x] Repo initialized
-- [x] Next.js 15 scaffold (`npx create-next-app@latest`)
-- [x] TypeScript + ESLint configured
+- [x] Repo initialized, pushed to GitHub
+- [x] Next.js 16 scaffold (TypeScript, App Router, `src/` dir)
 - [x] CSS design system (globals.css with full token set)
 - [x] ThemeProvider (dark/light, localStorage persistence)
 - [x] Navigation component (sticky, 3 tabs, search, theme toggle, login icon)
-- [x] 26 static pages building successfully (`npm run build`)
+- [x] Vercel connected (auto-deploy from `main`)
+- [x] Professional repo structure (Next.js at root, no subdirectory)
 
 ### Phase 1 — MVP Content ✅ COMPLETE
 - [x] Guide tab (7 sections, sticky sidebar, emergency numbers)
@@ -129,21 +196,22 @@ Defined in `frontend/src/app/globals.css`.
 - [x] SidebarToC (IntersectionObserver active section tracking)
 - [x] Community tab (posts list, Daily/Weekly/Monthly Best tabs, upvote UI)
 - [x] Ad slots (leaderboard below nav, rectangle in wiki sidebar)
-- [x] Login page UI (email/pass, Google OAuth stub, GitHub OAuth stub)
+- [x] Login page UI (email/pass stub, Google + GitHub OAuth buttons)
 
-### Phase 2 — Authentication 🔴 NOT STARTED
-- [ ] Install NextAuth.js (`npm install next-auth`)
-- [ ] Configure Google OAuth provider (needs Google Cloud Console credentials)
-- [ ] Configure GitHub OAuth provider (needs GitHub App credentials)
-- [ ] Create `/api/auth/[...nextauth]/route.ts`
-- [ ] Add `SessionProvider` to root layout
-- [ ] Update `/login/page.tsx` to use `signIn()` / `signUp()`
+### Phase 2 — Authentication 🟡 IN PROGRESS
+- [x] Install NextAuth.js v5 (`next-auth@beta`)
+- [x] Create `src/auth.ts` with Google + GitHub providers
+- [x] Create `/api/auth/[...nextauth]/route.ts`
+- [x] Add `SessionProvider` to root layout (via `AuthProvider.tsx`)
+- [x] Update `/login/page.tsx` to use real `signIn()` (OAuth) + error message for email
+- [x] Session-aware Navigation (avatar when logged in, click to sign out)
+- [ ] **BLOCKED**: Fill OAuth credentials in `.env.local` (human action required)
+- [ ] Add env vars to Vercel dashboard
 - [ ] Protected routes: community posting, wiki editing
-- [ ] User profile page (`/profile/[username]`)
-- [ ] Session-aware Navigation (show username/avatar when logged in)
+- [ ] User profile page (`/profile/[username]`) — Phase 3 dependency
 
 ### Phase 3 — Database & Backend 🔴 NOT STARTED
-- [ ] Choose DB: Supabase (recommended for Vercel) or Prisma + PostgreSQL
+- [ ] Choose DB: **Supabase** (recommended — easy Vercel integration)
 - [ ] Schema: User, WikiArticle, CommunityPost, Vote, Comment
 - [ ] Migrate static data files → DB seed scripts
 - [ ] API routes: `/api/v1/wiki/`, `/api/v1/community/`, `/api/v1/auth/`
@@ -152,6 +220,7 @@ Defined in `frontend/src/app/globals.css`.
 - [ ] Best posts algorithm (score = upvotes × recency_weight)
 - [ ] Wiki article create/edit form (for authenticated users)
 - [ ] Comment system
+- [ ] Email/password auth (requires User table in DB)
 
 ### Phase 4 — Content & SEO 🟡 PARTIAL
 - [ ] `sitemap.ts` (Next.js built-in)
@@ -166,13 +235,13 @@ Defined in `frontend/src/app/globals.css`.
 - [x] Ad slot placeholders (leaderboard 728×90, rectangle 300×250)
 - [ ] Google AdSense account setup
 - [ ] Replace placeholder divs with `<Script>` + AdSense code
-- [ ] Verify ad slots don't break layout on mobile
 
-### Phase 6 — Deployment 🔴 NOT STARTED
-- [ ] Vercel project setup (`vercel link`)
-- [ ] Environment variables: `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GITHUB_CLIENT_ID`, DB URL
+### Phase 6 — Deployment 🟡 IN PROGRESS
+- [x] Vercel project connected (auto-deploy from GitHub `main`)
+- [x] `vercel.json` with explicit build config
+- [ ] OAuth callback URLs configured in Google + GitHub (needs credentials)
+- [ ] `AUTH_SECRET` + OAuth env vars set in Vercel dashboard
 - [ ] Custom domain setup
-- [ ] CI/CD (GitHub Actions or Vercel auto-deploy from main)
 
 ### Phase 7 — Polish & Mobile 🟡 PARTIAL
 - [x] Responsive CSS (collapses at 768px, 480px)
@@ -185,62 +254,49 @@ Defined in `frontend/src/app/globals.css`.
 
 ---
 
-## 6. Known Issues & Decisions
+## 6. Known Issues
 
 | # | Issue | Status | Notes |
 |---|-------|--------|-------|
-| 1 | Auth not connected | Open | `/login/page.tsx` shows `alert()` stub. Needs NextAuth.js |
-| 2 | No DB | Open | All data is static `.ts` files. Votes, posts, edits are not persisted |
-| 3 | Community upvote is UI-only | Open | Button exists, state is local, resets on refresh |
-| 4 | AdBanner import unused in community/page.tsx | Minor | `import AdBanner` left in file but not used — safe to remove |
-| 5 | `page.module.css` from create-next-app | Minor | Default file exists, unused, harmless |
-| 6 | Mobile: no hamburger nav | Open | Tabs shrink but no dedicated mobile nav pattern |
-| 7 | Best post algorithm is client-side sort | Open | Currently just `sort by upvotes`. Real algorithm needs recency weighting |
+| 1 | OAuth credentials not filled | Blocked | `.env.local` needs AUTH_SECRET, Google, GitHub credentials |
+| 2 | No DB | Open | All data is static `.ts` files. Votes, posts, edits not persisted |
+| 3 | Community upvote is UI-only | Open | State is local, resets on refresh. Needs Phase 3 |
+| 4 | Mobile: no hamburger nav | Open | Tabs shrink but no dedicated mobile nav pattern |
+| 5 | Best post algorithm is client-side sort | Open | Needs recency weighting + DB |
+| 6 | Email/password login disabled | By design | Stubbed until DB is ready (Phase 3) |
 
 ---
 
-## 7. AI Agent Guide
-
-> For Claude, Gemini, Codex, or any AI picking up this project:
-
-### How to get context fast
-1. Read `MASTERPLAN.md` (this file) — current state
-2. Read `AGENT_INSTRUCTION.md` — coding conventions and architecture rules
-3. Read `frontend/src/app/globals.css` — design tokens
-4. Read the relevant component/page file before editing it
-
-### Agent roles (`.claude/agents/`)
-- **CTO.md** (`senior-clean-architect`) — React components, Next.js architecture, TypeScript
-- **CEO.md** (`wiki-operations-veteran`) — Content, data files, wiki articles, community strategy
-- **CDO.md** (`ui-ux-visual-master`) — CSS, design system, layout, visual polish
-
-### Critical rules
-- Never use Tailwind. Always use CSS Modules + CSS custom properties.
-- Never add a DB without updating the tech stack section above.
-- Always mark tasks complete in this file when done.
-- When adding new pages/components, add them to the directory structure above.
-- Build must pass: `export PATH="/opt/homebrew/bin:$PATH" && npm run build` (from repo root)
-
-### Environment
-- Node.js: v25.6.1 at `/opt/homebrew/bin/node`
-- Always prefix npm/npx/node commands with: `export PATH="/opt/homebrew/bin:$PATH" &&`
-- Project root (= Next.js root): `/Users/jamesy/Documents/대동여지도/`
-- Claude's primary working dir: `/Users/jamesy/Documents/Study` (always use absolute paths)
-
----
-
-## 8. Recommended Next Step
-
-**Phase 2 — Authentication** is the highest-value unblocked task.
+## 7. Environment & Commands
 
 ```bash
-cd frontend && npm install next-auth
+# Always prefix with this on this machine:
+export PATH="/opt/homebrew/bin:$PATH"
+
+# Build (from repo root):
+npm run build
+
+# Dev server:
+npm run dev
+
+# Project root:
+/Users/jamesy/Documents/대동여지도/
+
+# Git remote:
+https://github.com/yoonks9306/daedongyeojido
 ```
 
-The login UI at `/login/page.tsx` is already built. Just needs:
-1. `next-auth` package
-2. Google + GitHub OAuth credentials (from Google Cloud Console + GitHub Apps)
-3. `/api/auth/[...nextauth]/route.ts` config file
-4. `signIn()` calls replacing the `alert()` stubs
+Node.js: v25.6.1 at `/opt/homebrew/bin/node`
+Claude's primary working dir: `/Users/jamesy/Documents/Study` (always use absolute paths)
 
-This unlocks community posting, wiki editing, and user-level features.
+---
+
+## 8. AI Agent Coding Rules
+
+See `AGENT_INSTRUCTION.md` for full coding conventions.
+
+Quick reference:
+- No Tailwind. CSS Modules + CSS custom properties only.
+- Never add a DB without updating Section 2 (Tech Stack) above.
+- Build must pass: `export PATH="/opt/homebrew/bin:$PATH" && npm run build`
+- Update Section 0 before ending any session.

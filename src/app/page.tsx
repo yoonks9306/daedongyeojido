@@ -4,7 +4,7 @@ import { guideSections } from '@/data/guide-content';
 import styles from './guide/guide.module.css';
 
 export const metadata: Metadata = {
-  title: 'Guide — Korea Travel Essentials',
+  title: 'KorWiki',
 };
 
 export default function GuidePage() {
