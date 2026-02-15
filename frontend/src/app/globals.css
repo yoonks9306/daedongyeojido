@@ -1,0 +1,305 @@
+/* ============================================
+   KorWiki Design System — globals.css
+   CDO: ui-ux-visual-master  |  Namu Wiki DNA, 2026 Evolution
+   ============================================ */
+
+/* --- 1. Design Tokens (Light Mode) --- */
+:root {
+  --color-bg-primary:   #ffffff;
+  --color-bg-secondary: #f6f8fa;
+  --color-bg-tertiary:  #eaeef2;
+  --color-bg-infobox:   #f0f4f8;
+  --color-bg-code:      #f3f4f6;
+  --color-bg-nav:       #ffffff;
+  --color-bg-nav-hover: #f0f4f8;
+
+  --color-text-primary:       #1a1a2e;
+  --color-text-secondary:     #4a5568;
+  --color-text-muted:         #718096;
+  --color-text-link:          #0969da;
+  --color-text-link-visited:  #6e40c9;
+
+  --color-border-primary: #d0d7de;
+  --color-border-subtle:  color-mix(in srgb, var(--color-text-primary), transparent 88%);
+
+  /* Korean red — brand accent */
+  --color-accent:       #c0392b;
+  --color-accent-hover: #a93226;
+
+  --color-badge-transport: #1a73e8;
+  --color-badge-apps:      #0f9d58;
+  --color-badge-food:      #f4511e;
+  --color-badge-culture:   #9c27b0;
+  --color-badge-places:    #e67e22;
+  --color-badge-practical: #607d8b;
+
+  /* Typography */
+  --font-sans: 'Inter', 'Pretendard', 'Noto Sans KR', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+  --font-size-xs:   clamp(0.7rem,   1.5vw, 0.75rem);
+  --font-size-sm:   clamp(0.8rem,   1.8vw, 0.875rem);
+  --font-size-base: clamp(0.9375rem, 2vw,  1rem);
+  --font-size-md:   clamp(1rem,     2.2vw, 1.125rem);
+  --font-size-lg:   clamp(1.125rem, 2.5vw, 1.25rem);
+  --font-size-xl:   clamp(1.25rem,  3vw,   1.5rem);
+  --font-size-2xl:  clamp(1.5rem,   4vw,   1.875rem);
+  --font-size-3xl:  clamp(1.75rem,  5vw,   2.25rem);
+
+  --font-weight-normal:   400;
+  --font-weight-medium:   500;
+  --font-weight-semibold: 600;
+  --font-weight-bold:     700;
+
+  --line-height-tight:   1.3;
+  --line-height-normal:  1.6;
+  --line-height-relaxed: 1.8;
+
+  /* Spacing */
+  --spacing-1:  0.25rem;
+  --spacing-2:  0.5rem;
+  --spacing-3:  0.75rem;
+  --spacing-4:  1rem;
+  --spacing-5:  1.25rem;
+  --spacing-6:  1.5rem;
+  --spacing-8:  2rem;
+  --spacing-10: 2.5rem;
+  --spacing-12: 3rem;
+  --spacing-16: 4rem;
+
+  /* Layout */
+  --nav-height:        56px;
+  --ad-banner-height:  106px;
+  --sidebar-width:     240px;
+  --content-max-width: 1200px;
+  --article-max-width: 860px;
+
+  /* Borders */
+  --border-radius-sm:   4px;
+  --border-radius-md:   6px;
+  --border-radius-lg:   8px;
+  --border-radius-pill: 9999px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.08);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.10);
+  --shadow-lg: 0 8px 24px rgba(0, 0, 0, 0.12);
+
+  /* Transitions */
+  --transition-fast:   120ms ease;
+  --transition-normal: 200ms ease;
+}
+
+/* --- 2. Dark Mode Tokens --- */
+[data-theme='dark'] {
+  --color-bg-primary:   #0d1117;
+  --color-bg-secondary: #161b22;
+  --color-bg-tertiary:  #1c2128;
+  --color-bg-infobox:   #161b22;
+  --color-bg-code:      #1c2128;
+  --color-bg-nav:       #161b22;
+  --color-bg-nav-hover: #1c2128;
+
+  --color-text-primary:       #e6edf3;
+  --color-text-secondary:     #8b949e;
+  --color-text-muted:         #6e7681;
+  --color-text-link:          #58a6ff;
+  --color-text-link-visited:  #bc8cff;
+
+  --color-border-primary: #30363d;
+
+  --color-accent:       #e74c3c;
+  --color-accent-hover: #c0392b;
+
+  --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.30);
+  --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.40);
+}
+
+/* --- 3. Base Reset --- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: var(--font-sans);
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-normal);
+  line-height: var(--line-height-normal);
+  color: var(--color-text-primary);
+  background-color: var(--color-bg-primary);
+  transition: background-color var(--transition-normal), color var(--transition-normal);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* --- 4. Typography --- */
+h1 {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+}
+h2 {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  line-height: var(--line-height-tight);
+  margin-block: var(--spacing-6) var(--spacing-3);
+  border-bottom: 1px solid var(--color-border-primary);
+  padding-bottom: var(--spacing-2);
+}
+h3 {
+  font-size: var(--font-size-lg);
+  font-weight: var(--font-weight-semibold);
+  margin-block: var(--spacing-4) var(--spacing-2);
+}
+h4 {
+  font-size: var(--font-size-md);
+  font-weight: var(--font-weight-medium);
+  margin-block: var(--spacing-3) var(--spacing-2);
+}
+p { margin-bottom: var(--spacing-4); }
+
+a {
+  color: var(--color-text-link);
+  text-decoration: none;
+}
+a:hover   { text-decoration: underline; }
+a:visited { color: var(--color-text-link-visited); }
+
+ul, ol { padding-left: var(--spacing-6); margin-bottom: var(--spacing-4); }
+li { margin-bottom: var(--spacing-1); }
+
+strong { font-weight: var(--font-weight-semibold); }
+
+code {
+  font-family: var(--font-mono);
+  font-size: 0.875em;
+  background: var(--color-bg-code);
+  padding: 0.1em 0.35em;
+  border-radius: var(--border-radius-sm);
+}
+pre {
+  background: var(--color-bg-code);
+  padding: var(--spacing-4);
+  border-radius: var(--border-radius-md);
+  overflow-x: auto;
+  margin-bottom: var(--spacing-4);
+}
+pre code { background: none; padding: 0; }
+
+blockquote {
+  border-left: 3px solid var(--color-accent);
+  padding-left: var(--spacing-4);
+  color: var(--color-text-secondary);
+  font-style: italic;
+  margin-bottom: var(--spacing-4);
+}
+
+hr {
+  border: none;
+  border-top: 1px solid var(--color-border-primary);
+  margin-block: var(--spacing-6);
+}
+
+table {
+  border-collapse: collapse;
+  margin-bottom: var(--spacing-4);
+  font-size: var(--font-size-sm);
+  width: 100%;
+}
+th {
+  background: var(--color-bg-secondary);
+  font-weight: var(--font-weight-semibold);
+  text-align: left;
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-border-primary);
+}
+td {
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-border-primary);
+  vertical-align: top;
+}
+tr:nth-child(even) td { background: var(--color-bg-secondary); }
+
+/* --- 5. Namu Wiki Strikethrough = Insider Tip --- */
+del {
+  text-decoration: line-through;
+  color: var(--color-text-muted);
+  font-size: 0.9em;
+  cursor: help;
+}
+del::after {
+  content: ' ✦';
+  font-size: 0.75em;
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+/* --- 6. Layout utilities --- */
+.container {
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--spacing-6);
+}
+
+.main-content {
+  padding-top: calc(var(--nav-height) + var(--ad-banner-height));
+  min-height: 100vh;
+}
+
+/* --- 7. Category badges --- */
+.badge {
+  display: inline-block;
+  padding: 0.15em 0.6em;
+  border-radius: var(--border-radius-pill);
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #fff;
+}
+.badge-transport { background: var(--color-badge-transport); }
+.badge-apps      { background: var(--color-badge-apps); }
+.badge-food      { background: var(--color-badge-food); }
+.badge-culture   { background: var(--color-badge-culture); }
+.badge-places    { background: var(--color-badge-places); }
+.badge-practical { background: var(--color-badge-practical); }
+
+/* --- 8. Scrollbar --- */
+::-webkit-scrollbar              { width: 6px; height: 6px; }
+::-webkit-scrollbar-track        { background: var(--color-bg-secondary); }
+::-webkit-scrollbar-thumb        { background: var(--color-border-primary); border-radius: var(--border-radius-pill); }
+::-webkit-scrollbar-thumb:hover  { background: var(--color-text-muted); }
+
+/* --- 9. Focus (accessibility) --- */
+:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: 2px;
+  border-radius: var(--border-radius-sm);
+}
+
+/* --- 10. Reduced motion --- */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+/* --- 11. Dark mode image dimming --- */
+[data-theme='dark'] img:not([data-no-dim]) {
+  filter: brightness(0.88) contrast(1.05);
+}
+
+/* --- 12. Text selection --- */
+::selection { background: var(--color-accent); color: #fff; }

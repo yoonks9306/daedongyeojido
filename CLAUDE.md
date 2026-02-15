@@ -1,113 +1,94 @@
-# 대동여지도 (Daedong Yeojido) — Project Agent
+# 대동여지도 — AI Agent Instructions
 
-## Project Overview
-
-**대동여지도** is an English-language master travel guide website for foreigners visiting Korea.
-Modeled after the design philosophy of **Namu Wiki (나무위키)** — community-driven, dense, well-structured documentation.
-
-### Three-Tab Structure
-
-| Tab | Purpose |
-|-----|---------|
-| **Travel Guide** | Curated, authoritative travel content for Korea |
-| **Wiki** | Detailed topic-based articles (places, culture, food, transport, etc.) |
-| **Community** | User posts, reviews, free board — with Daily / Weekly / Monthly Best sorting |
+> **Project tracker**: See `PROJECT.md` for milestones, status, and current tasks.
+> This file contains coding conventions and architecture rules for AI agents.
 
 ---
 
-## Tech Stack Decisions
+## Agent Personas
 
-> Update this section as decisions are finalized.
+Three custom sub-agents live in `.claude/agents/`:
 
-- **Language**: English (primary), Korean (secondary/metadata)
-- **Reference UI/UX**: Namu Wiki (나무위키) — dense information layout, sidebar ToC, wiki-style article pages
-- **Frontend**: TBD
-- **Backend**: TBD
-- **Database**: TBD
-- **Auth**: TBD
+| File | Persona | Model | Specialty |
+|------|---------|-------|-----------|
+| `CTO.md` | `senior-clean-architect` | opus / blue | React components, Next.js, TypeScript, architecture |
+| `CEO.md` | `wiki-operations-veteran` | sonnet / red | Content strategy, wiki articles, seed data, community |
+| `CDO.md` | `ui-ux-visual-master` | sonnet / yellow | CSS, design system, layout, visual polish |
 
----
-
-## Content Architecture
-
-### Travel Guide Tab
-- Top-level categories: Cities, Transportation, Food, Accommodation, Culture, Practical Info
-- Each article follows the Namu Wiki format: structured headers, infoboxes, related links
-
-### Wiki Tab
-- Title-based lookup (like Wikipedia / Namu Wiki)
-- Hierarchical category tree
-- Article template: infobox → summary → detailed sections → see also → external links
-
-### Community Tab
-- Post types: Review, Free Board
-- Best posts ranking:
-  - **Daily Best**: top posts in last 24h
-  - **Weekly Best**: top posts in last 7 days
-  - **Monthly Best**: top posts in last 30 days
-- Voting/upvote system for ranking
-
----
-
-## Design Guidelines
-
-- Reference: Namu Wiki (나무위키) — https://namu.wiki
-- Dense, information-rich layout (not card-based)
-- Wiki-style table of contents (sticky sidebar or top anchor links)
-- Mobile responsive but desktop-first
-- Dark mode support preferred
-- Minimal ads / non-intrusive monetization
+Note: These personas cannot be invoked via `subagent_type` in the Task tool — use `general-purpose` agents with their philosophy embedded in the prompt.
 
 ---
 
 ## Coding Conventions
 
-- Component/file names: PascalCase for components, kebab-case for routes/pages
-- All user-facing strings in English
-- Korean content (place names, proper nouns) kept in Korean with English transliteration
-- API routes: RESTful, `/api/v1/...`
-- Write tests for core ranking logic (Best posts algorithm)
+- **Framework**: Next.js 15 App Router, TypeScript strict mode
+- **Styling**: CSS Modules + CSS custom properties. **No Tailwind. No Bootstrap. No styled-components.**
+- **Components**: `PascalCase.tsx` in `src/components/`
+- **Routes/pages**: kebab-case directories in `src/app/`
+- **Data**: TypeScript interfaces in `src/types/index.ts`, data files in `src/data/`
+- **API routes**: RESTful, `/api/v1/...`
+- **Imports**: Always use `@/*` alias (e.g., `import { wikiArticles } from '@/data/wiki-articles'`)
+- **Client components**: Add `'use client'` only when needed (state, events, browser APIs)
+- **No emojis** in code comments or component text unless explicitly in spec
+
+---
+
+## Architecture Rules
+
+1. **Dark mode** via `[data-theme='dark']` on `<html>` — never toggle via JS class switches
+2. **ThemeProvider** owns theme state — access via `useTheme()` hook
+3. **Navigation** renders the leaderboard ad slot globally — never add another leaderboard per-page
+4. **Static data files** are MVP placeholders — when DB is added, keep the same TypeScript interfaces
+5. **WikiArticle** component handles all article rendering — don't duplicate article layout logic in pages
+6. **SSG first**: default to `generateStaticParams` + static rendering; only use `'use client'` where necessary
+7. **`<del>` convention**: strikethrough = insider tip (styled by `del::after { content: ' ✦' }` in globals.css)
+
+---
+
+## CSS / Design Rules (CDO)
+
+- All design tokens are in `frontend/src/app/globals.css`
+- Color: `--color-accent: #c0392b` (Korean red) — do not introduce other accent colors
+- Dark mode is the **default** theme
+- Layout: desktop-first, responsive breakpoints at 1024px and 768px
+- Ad slots: leaderboard (728×90) below nav, rectangle (300×250) in sidebar/content
+
+---
+
+## Content Rules (CEO)
+
+- Wiki article slugs: URL-safe English, kebab-case (e.g., `naver-map`, `korean-bbq`)
+- Internal links: `<a href="/wiki/slug">anchor text</a>` inside `dangerouslySetInnerHTML` content
+- Insider tips: wrap in `<del>` tags — the CSS will handle the strikethrough + ✦ marker
+- Categories: Transport, Apps, Money, SIM/Data, Food, Culture, Entertainment, Shopping, Places, Practical
+
+---
+
+## Build Command
+
+```bash
+cd /Users/jamesy/Documents/대동여지도/frontend
+export PATH="/opt/homebrew/bin:$PATH"
+npm run build
+```
+
+Expected output: 26 static pages, 0 TypeScript errors.
+
+---
+
+## File Reading Order (new agent onboarding)
+
+1. `PROJECT.md` — current status and what to work on
+2. `CLAUDE.md` — this file (conventions)
+3. `frontend/src/app/globals.css` — design tokens
+4. The specific file(s) you're about to edit
 
 ---
 
 ## Key Domain Rules
 
-1. **Best Post Algorithm**: score = upvotes × recency_weight. Define recency windows clearly per tab (daily/weekly/monthly).
-2. **Wiki articles** must have a canonical slug (URL-safe English title).
-3. **Travel Guide** content is editorially controlled; **Wiki** and **Community** are community-contributed.
-4. Spam/abuse: implement rate limiting and report system from day one.
-
----
-
-## Folder Structure (Proposed)
-
-```
-대동여지도/
-├── CLAUDE.md          ← this file
-├── docs/              ← design specs, wireframes, research
-├── frontend/          ← web app
-├── backend/           ← API server
-├── db/                ← schema, migrations
-└── scripts/           ← utility/data scripts
-```
-
----
-
-## Reference Sites
-
-- **Namu Wiki**: https://namu.wiki — UI/UX reference, content structure
-- **Lonely Planet**: content depth reference
-- **Reddit (r/korea, r/seoul)**: community tone reference
-- **Tripadvisor**: review format reference
-
----
-
-## Current Status
-
-- [ ] Tech stack finalized
-- [ ] Wireframes / mockups
-- [ ] Database schema
-- [ ] Frontend scaffold
-- [ ] Backend scaffold
-- [ ] First Travel Guide articles
-- [ ] Community MVP
+1. **Best Post Algorithm**: `score = upvotes × recency_weight`. Define recency windows per tab (daily=24h, weekly=7d, monthly=30d).
+2. **Wiki slugs** must be canonical and URL-safe.
+3. **Guide** content = editorially controlled. **Wiki** + **Community** = community-contributed.
+4. **Spam/abuse**: implement rate limiting and report system when backend is added.
+5. **Auth**: use NextAuth.js with Google + GitHub providers (OAuth buttons already exist on login page).

@@ -1,0 +1,175 @@
+/* Navigation Component — Sticky top bar with 3-tab layout */
+
+.nav {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: var(--nav-height);
+  background: var(--color-bg-nav);
+  border-bottom: 1px solid var(--color-border-primary);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  box-shadow: var(--shadow-sm);
+  transition: background-color var(--transition-normal);
+}
+
+.navInner {
+  max-width: var(--content-max-width);
+  width: 100%;
+  margin-inline: auto;
+  padding-inline: var(--spacing-6);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-5);
+}
+
+/* Logo */
+.logo {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-accent) !important;
+  text-decoration: none !important;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.logo span {
+  color: var(--color-text-primary);
+  font-weight: var(--font-weight-normal);
+}
+
+/* Tab strip */
+.tabs {
+  display: flex;
+  align-items: stretch;
+  height: var(--nav-height);
+  flex-shrink: 0;
+}
+
+.tab {
+  display: flex;
+  align-items: center;
+  padding-inline: var(--spacing-5);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  color: #000000;
+  text-decoration: none;
+  border-bottom: 3px solid transparent;
+  transition: color var(--transition-fast), border-color var(--transition-fast),
+              background var(--transition-fast);
+  letter-spacing: 0.01em;
+}
+[data-theme='dark'] .tab {
+  color: #ffffff;
+}
+.tab:hover {
+  color: var(--color-text-primary);
+  background: var(--color-bg-nav-hover);
+  text-decoration: none;
+}
+.tabActive {
+  color: var(--color-accent) !important;
+  border-bottom-color: var(--color-accent);
+  font-weight: var(--font-weight-semibold);
+}
+
+/* Search */
+.searchForm {
+  flex: 1;
+  max-width: 380px;
+  margin-left: auto;
+}
+.searchInput {
+  width: 100%;
+  padding: var(--spacing-2) var(--spacing-3);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-primary);
+  font-size: var(--font-size-sm);
+  font-family: var(--font-sans);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+.searchInput::placeholder { color: var(--color-text-muted); }
+.searchInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-accent), transparent 80%);
+}
+
+/* Theme toggle button */
+.themeToggle {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+.themeToggle:hover {
+  background: var(--color-bg-nav-hover);
+  color: var(--color-text-primary);
+}
+
+/* Login button */
+.loginBtn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  background: var(--color-bg-secondary);
+  color: var(--color-text-secondary);
+  text-decoration: none;
+  transition: background var(--transition-fast), color var(--transition-fast);
+  flex-shrink: 0;
+}
+.loginBtn:hover {
+  background: var(--color-bg-nav-hover);
+  color: var(--color-accent);
+  text-decoration: none;
+}
+
+/* Ad banner pinned below nav */
+.adSlotWrapper {
+  position: fixed;
+  top: var(--nav-height);
+  left: 0;
+  right: 0;
+  z-index: 99;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: var(--color-bg-secondary);
+  border-bottom: 1px solid var(--color-border-primary);
+  padding: var(--spacing-2) 0;
+  min-height: var(--ad-banner-height);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 1024px) {
+  .searchForm { max-width: 240px; }
+}
+
+@media (max-width: 768px) {
+  .navInner { padding-inline: var(--spacing-4); gap: var(--spacing-3); }
+  .logo span { display: none; }
+  .tab { padding-inline: var(--spacing-3); font-size: var(--font-size-xs); }
+  .searchForm { max-width: 160px; }
+  .adSlotWrapper { display: none; }
+}
+
+@media (max-width: 480px) {
+  .searchForm { display: none; }
+}

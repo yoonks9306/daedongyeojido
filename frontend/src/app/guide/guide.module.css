@@ -1,0 +1,195 @@
+/* Guide Tab (Landing Page) Styles */
+
+.guidePage {
+  max-width: var(--content-max-width);
+  margin-inline: auto;
+  padding-inline: var(--spacing-6);
+  padding-top: var(--spacing-6);
+}
+
+/* ---- Hero banner ---- */
+.hero {
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-accent), transparent 88%) 0%,
+    var(--color-bg-secondary) 100%
+  );
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-lg);
+  padding: var(--spacing-10) var(--spacing-10);
+  margin-bottom: var(--spacing-8);
+}
+
+.heroTitle {
+  font-size: var(--font-size-3xl);
+  font-weight: var(--font-weight-bold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-3);
+  line-height: var(--line-height-tight);
+  border: none;
+  padding: 0;
+}
+.heroTitle span { color: var(--color-accent); }
+
+.heroSubtitle {
+  font-size: var(--font-size-lg);
+  color: var(--color-text-secondary);
+  max-width: 600px;
+  line-height: var(--line-height-relaxed);
+  margin-bottom: 0;
+}
+
+/* ---- Two-column content grid ---- */
+.contentGrid {
+  display: grid;
+  grid-template-columns: 1fr 300px;
+  gap: var(--spacing-8);
+  align-items: start;
+}
+
+.mainColumn { min-width: 0; }
+
+.sideColumn {
+  position: sticky;
+  top: calc(var(--nav-height) + var(--ad-banner-height) + var(--spacing-4));
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-4);
+}
+
+/* ---- Guide sections ---- */
+.section { margin-bottom: var(--spacing-10); }
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-3);
+  margin-bottom: var(--spacing-4);
+  padding-bottom: var(--spacing-3);
+  border-bottom: 2px solid var(--color-border-primary);
+}
+.sectionIcon  { font-size: var(--font-size-xl); line-height: 1; }
+.sectionTitle {
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  border: none;
+  padding: 0;
+  margin: 0;
+}
+.sectionDesc {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-4);
+}
+
+/* ---- Guide items ---- */
+.itemList { list-style: none; padding: 0; margin: 0; }
+
+.item {
+  padding: var(--spacing-4);
+  border: 1px solid var(--color-border-subtle);
+  border-radius: var(--border-radius-md);
+  margin-bottom: var(--spacing-3);
+  background: var(--color-bg-primary);
+  transition: box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+.item:hover {
+  border-color: var(--color-border-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.itemTitle {
+  font-size: var(--font-size-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-primary);
+  margin-bottom: var(--spacing-2);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-2);
+  /* Override h3 default margins */
+  margin-top: 0;
+  border: none;
+}
+.itemContent {
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-relaxed);
+  margin: 0;
+}
+.itemContent a {
+  color: var(--color-text-link);
+  font-weight: var(--font-weight-medium);
+}
+
+/* ---- Sidebar widgets ---- */
+.quickRef {
+  background: var(--color-bg-secondary);
+  border: 1px solid var(--color-border-primary);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-4);
+}
+
+.quickRefTitle {
+  font-size: var(--font-size-xs);
+  font-weight: var(--font-weight-semibold);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  color: var(--color-text-muted);
+  margin-bottom: var(--spacing-3);
+  padding-bottom: var(--spacing-2);
+  border-bottom: 1px solid var(--color-border-primary);
+}
+
+/* Emergency box */
+.emergencyBox {
+  background: color-mix(in srgb, #e53e3e, transparent 90%);
+  border: 1px solid color-mix(in srgb, #e53e3e, transparent 65%);
+  border-radius: var(--border-radius-md);
+  padding: var(--spacing-4);
+}
+
+.emergencyTitle {
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-bold);
+  color: #c53030;
+  margin-bottom: var(--spacing-3);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+[data-theme='dark'] .emergencyTitle  { color: #fc8181; }
+[data-theme='dark'] .emergencyBox    {
+  background: color-mix(in srgb, #c53030, transparent 85%);
+  border-color: color-mix(in srgb, #c53030, transparent 65%);
+}
+
+.emergencyItem {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-size-sm);
+  padding: var(--spacing-2) 0;
+  border-bottom: 1px solid color-mix(in srgb, #e53e3e, transparent 80%);
+}
+.emergencyItem:last-child { border-bottom: none; }
+
+.emergencyNum {
+  font-weight: var(--font-weight-bold);
+  font-family: var(--font-mono);
+  font-size: var(--font-size-base);
+  color: #c53030;
+}
+[data-theme='dark'] .emergencyNum { color: #fc8181; }
+
+/* ---- Responsive ---- */
+@media (max-width: 1024px) {
+  .contentGrid      { grid-template-columns: 1fr; }
+  .sideColumn       { position: static; }
+}
+
+@media (max-width: 768px) {
+  .guidePage        { padding-inline: var(--spacing-4); }
+  .hero             { padding: var(--spacing-6); }
+  .heroTitle        { font-size: var(--font-size-2xl); }
+}
