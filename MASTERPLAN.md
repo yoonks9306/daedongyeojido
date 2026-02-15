@@ -10,34 +10,41 @@
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **UX polish & live data session** (`d3122ec`):
-  - Google OAuth verified (local + Vercel production)
-  - Profile dropdown menu (user info, theme toggle, sign out)
-  - Community: live view/comment counts (force-dynamic + Supabase aggregate joins)
-  - Community: anonymous posting, admin delete, SVG icons, fully clickable post items
-  - Wiki: scroll-based TOC tracking, actual `updated_at` timestamps
-  - Exchange rate API switched to open.er-api.com (KRW support)
-  - `increment_views` RPC function added
+- **AdSense + Community voting session** (`a506672`):
+  - Google AdSense script integrated (`ca-pub-1126883662685001`, `beforeInteractive`)
+  - AdBanner.tsx: real `<ins class="adsbygoogle">` tags (placeholder 제거)
+  - View count bug fix: `await` RPC before fetch (`b019968`)
+  - Anonymous comment option (checkbox + backend)
+  - Comment upvote/downvote system (comment_votes table, RPC, API)
+  - Post upvote/downvote buttons in detail page
+  - Leaderboard ad removed from layout (승인 전 빈 공간 방지)
 
 ### Currently blocked on
-- Nothing. All code changes committed and pushed.
+- **AdSense site verification 실패**: Google 크롤러가 사이트 소유권 확인 불가. `beforeInteractive` 적용했으나 미해결. ads.txt 방식 시도 필요할 수 있음.
+- **DB migration 필요**: `supabase/migrations/2026-02-16-comment-votes.sql` 실행해야 댓글 투표 기능 작동
+
+### Key decision
+- 콘텐츠(위키 100+편 확장 등)는 나중에 채워넣기로 하고, **구조/기능 완성에 먼저 집중**하기로 결정
 
 ### Next task for incoming agent
-**Phase 5 (Monetization):**
-1. Google AdSense account setup
-2. Replace ad placeholder divs with real AdSense `<Script>` code
-3. Verify ads render on production
+**AdSense 해결 (최우선):**
+1. AdSense site verification 문제 해결 (ads.txt 방식 시도: `public/ads.txt` 생성)
+2. 승인 후 leaderboard ad를 layout에 다시 추가
 
-**Or Phase 4 continued (content expansion):**
-1. Expand wiki articles toward 100+ target (currently ~38)
-2. Expand guide sections with city-specific and scenario packs
+**Phase 5 continued (Monetization):**
+1. AdSense 승인 완료 후 광고 슬롯 최적화
+
+**Phase 7 (Polish):**
+1. Mobile hamburger nav
+2. Loading states / skeleton screens
+3. Error boundaries / 404 page
 
 ### Recent git commits
+- `a506672` feat: add comment voting, anonymous comments, post vote bar
+- `8aafe8c` fix: AdSense beforeInteractive + remove empty leaderboard
+- `4d0f485` feat: integrate Google AdSense
+- `b019968` fix: await increment_views RPC before fetch
 - `d3122ec` fix: polish community UX, live data, nav dropdown, and misc bug fixes
-- `80b8e07` feat: add phase 4 wiki expansion batch 1
-- `2c68e9c` feat: split guide nav roles and enrich domain content
-- `20c051d` feat: redesign guide IA and add live money widget
-- `b3b1b2f` feat: add phase 4 seo foundation
 
 ---
 
@@ -234,10 +241,12 @@ Defined in `src/app/globals.css`.
 - [x] Internal hyperlinks between wiki articles
 - [x] Korean-language metadata for SEO
 
-### Phase 5 — Monetization 🔴 NOT STARTED
+### Phase 5 — Monetization 🟡 IN PROGRESS
 - [x] Ad slot placeholders (leaderboard 728×90, rectangle 300×250)
-- [ ] Google AdSense account setup
-- [ ] Replace placeholder divs with `<Script>` + AdSense code
+- [x] Google AdSense script integrated (`ca-pub-1126883662685001`)
+- [x] AdBanner.tsx: real `<ins class="adsbygoogle">` tags replacing placeholders
+- [ ] AdSense site verification (Google 크롤러 인식 실패, 미해결)
+- [ ] AdSense 승인 후 leaderboard 광고 layout에 재추가
 
 ### Phase 6 — Deployment 🟡 IN PROGRESS
 - [x] Vercel project connected (auto-deploy from GitHub `main`)

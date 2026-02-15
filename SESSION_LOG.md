@@ -179,3 +179,17 @@
 - Changed community page to use Supabase aggregate join `comments(count)` for real comment counts
 - Added `increment_views` RPC function (`supabase/migrations/2026-02-16-increment-views-rpc.sql`)
 - Committed as `d3122ec`, pushed to `main`
+
+## 2026-02-16 — Claude (Opus) — Phase 5: AdSense + Community voting features
+
+- **Key decision**: 콘텐츠(위키 100+편 등)는 나중에 채워넣기로 하고, 구조/기능 완성에 집중하기로 결정
+- Fixed view count: `void supabaseAdmin.rpc(...)` → `await` before fetch (fire-and-forget 버그 수정, `b019968`)
+- Integrated Google AdSense (`ca-pub-1126883662685001`): `next/script` with `beforeInteractive` strategy
+- Replaced ad placeholder divs with real `<ins class="adsbygoogle">` tags in `AdBanner.tsx`
+- Removed leaderboard ad from layout (AdSense 승인 전 빈 공간 문제)
+- **AdSense site verification 실패** — `beforeInteractive` 적용했으나 Google 크롤러가 인식 못함. 미해결 상태.
+- Added anonymous comment option (checkbox in comment form + backend support)
+- Added comment upvote/downvote system: `comment_votes` table, `recalculate_comment_score` RPC, vote API (`POST/DELETE /api/v1/community/comments/[commentId]/vote`)
+- Added post upvote/downvote buttons at bottom of post detail content area
+- DB migration required: `supabase/migrations/2026-02-16-comment-votes.sql`
+- Commits: `b019968` (view count fix), `4d0f485` (AdSense), `8aafe8c` (AdSense fix), `a506672` (voting + anonymous)
