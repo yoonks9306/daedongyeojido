@@ -40,6 +40,15 @@
   resize: vertical;
 }
 
+.checkboxLabel {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--font-size-sm);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+}
+
 .error {
   color: var(--color-accent);
   font-size: var(--font-size-sm);

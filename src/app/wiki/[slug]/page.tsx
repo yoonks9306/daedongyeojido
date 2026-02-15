@@ -18,7 +18,7 @@ function dbToArticle(row: Record<string, unknown>): WikiArticleType {
     content: row.content as string,
     relatedArticles: row.related_articles as string[],
     tags: row.tags as string[],
-    lastUpdated: row.last_updated as string,
+    lastUpdated: (row.updated_at as string) ?? (row.last_updated as string),
   };
 }
 

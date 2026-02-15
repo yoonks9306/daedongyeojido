@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import styles from './WikiArticle.module.css';
 
 interface TocEntry {
@@ -17,6 +17,7 @@ export default function SidebarToC({ contentId }: SidebarToCProps) {
   const [entries, setEntries] = useState<TocEntry[]>([]);
   const [activeId, setActiveId] = useState<string>('');
 
+  // Parse headings on mount
   useEffect(() => {
     const contentEl = document.getElementById(contentId);
     if (!contentEl) return;
@@ -34,18 +35,34 @@ export default function SidebarToC({ contentId }: SidebarToCProps) {
     });
 
     setEntries(parsed);
-
-    const observer = new IntersectionObserver(
-      entries => {
-        const visible = entries.filter(e => e.isIntersecting);
-        if (visible.length > 0) setActiveId(visible[0].target.id);
-      },
-      { rootMargin: '-60px 0px -70% 0px' }
-    );
-
-    headings.forEach(h => observer.observe(h));
-    return () => observer.disconnect();
   }, [contentId]);
+
+  // Track active heading via scroll position
+  const updateActive = useCallback(() => {
+    if (entries.length === 0) return;
+
+    const scrollY = window.scrollY;
+    const offset = 100; // account for nav bar height
+
+    let current = entries[0].id;
+    for (const entry of entries) {
+      const el = document.getElementById(entry.id);
+      if (el && el.offsetTop - offset <= scrollY) {
+        current = entry.id;
+      }
+    }
+    setActiveId(current);
+  }, [entries]);
+
+  useEffect(() => {
+    if (entries.length === 0) return;
+
+    // Set initial active
+    updateActive();
+
+    window.addEventListener('scroll', updateActive, { passive: true });
+    return () => window.removeEventListener('scroll', updateActive);
+  }, [entries, updateActive]);
 
   if (entries.length === 0) return null;
 

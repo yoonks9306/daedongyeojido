@@ -158,3 +158,12 @@
 [data-theme='dark'] .catQuestion { background: #1a2a3a; color: #64b5f6; }
 [data-theme='dark'] .catFree { background: #3a1a2a; color: #f48fb1; }
 [data-theme='dark'] .catTip { background: #3a3010; color: #ffd54f; }
+
+.metaIcon {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+}
+.metaIcon svg {
+  opacity: 0.6;
+}

@@ -1,7 +1,11 @@
 import { notFound } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
+import { supabaseAdmin } from '@/lib/supabase-admin';
 import type { CommunityComment, CommunityPost } from '@/types';
 import CommunityDetailClient from './CommunityDetailClient';
+
+// Always fetch fresh data (view count, comments, etc.)
+export const dynamic = 'force-dynamic';
 
 interface Props {
   params: Promise<{ id: string }>;
@@ -48,6 +52,9 @@ export default async function CommunityPostDetailPage({ params }: Props) {
   if (!postRow) {
     notFound();
   }
+
+  // Increment view count (fire-and-forget, using admin to bypass RLS)
+  void supabaseAdmin.rpc('increment_views', { row_id: postId });
 
   const { data: commentsRows } = await supabase
     .from('comments')

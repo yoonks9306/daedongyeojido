@@ -19,6 +19,7 @@ export default function NewCommunityPostForm() {
   const [content, setContent] = useState('');
   const [category, setCategory] = useState<Category>('free');
   const [tagsText, setTagsText] = useState('');
+  const [anonymous, setAnonymous] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -41,6 +42,7 @@ export default function NewCommunityPostForm() {
           content,
           category,
           tags,
+          anonymous,
         }),
       });
 
@@ -99,6 +101,16 @@ export default function NewCommunityPostForm() {
           required
           disabled={submitting}
         />
+
+        <label className={styles.checkboxLabel}>
+          <input
+            type="checkbox"
+            checked={anonymous}
+            onChange={(e) => setAnonymous(e.target.checked)}
+            disabled={submitting}
+          />
+          Post anonymously
+        </label>
 
         <label className={styles.label} htmlFor="tags">Tags (comma-separated)</label>
         <input

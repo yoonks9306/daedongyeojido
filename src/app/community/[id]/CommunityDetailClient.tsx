@@ -14,6 +14,31 @@ const CAT_LABELS: Record<CommunityPost['category'], string> = {
   tip: 'Tip',
 };
 
+function UpvoteIcon() {
+  return (
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+      <polyline points="18 15 12 9 6 15"/>
+    </svg>
+  );
+}
+
+function CommentIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+    </svg>
+  );
+}
+
+function ViewIcon() {
+  return (
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  );
+}
+
 export default function CommunityDetailClient({
   initialPost,
   initialComments,
@@ -75,9 +100,9 @@ export default function CommunityDetailClient({
             </span>
             <span>{post.author}</span>
             <span>{new Date(post.createdAt).toLocaleString('en-US')}</span>
-            <span>▲ {post.upvotes}</span>
-            <span>💬 {post.comments}</span>
-            <span>👁 {post.views.toLocaleString()}</span>
+            <span className={styles.metaIcon}><UpvoteIcon /> {post.upvotes}</span>
+            <span className={styles.metaIcon}><CommentIcon /> {post.comments}</span>
+            <span className={styles.metaIcon}><ViewIcon /> {post.views.toLocaleString()}</span>
           </div>
         </header>
 

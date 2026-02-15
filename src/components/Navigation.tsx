@@ -132,14 +132,6 @@ export default function Navigation() {
 
                 <div className={styles.dropdownDivider} />
 
-                <Link
-                  href="/settings"
-                  className={styles.dropdownItem}
-                  onClick={() => setMenuOpen(false)}
-                >
-                  Settings
-                </Link>
-
                 <button
                   className={styles.dropdownItem}
                   onClick={() => { toggleTheme(); setMenuOpen(false); }}

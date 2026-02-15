@@ -10,6 +10,7 @@ type CreatePostBody = {
   content?: unknown;
   category?: unknown;
   tags?: unknown;
+  anonymous?: unknown;
 };
 
 export async function POST(request: Request) {
@@ -44,7 +45,10 @@ export async function POST(request: Request) {
 
   try {
     const supabaseUserId = await ensureCommunityAuthUser(session);
-    const authorName = session.user.name?.trim() || session.user.email?.split('@')[0] || 'Anonymous';
+    const isAnonymous = body.anonymous === true;
+    const authorName = isAnonymous
+      ? 'Anonymous'
+      : (session.user.name?.trim() || session.user.email?.split('@')[0] || 'Anonymous');
 
     const { data, error } = await supabaseAdmin
       .from('community_posts')
