@@ -1,36 +1,14 @@
-/* Ad Banner Placeholder Styles */
+/* Ad Banner Container */
 
 .adBanner {
   display: flex;
   align-items: center;
   justify-content: center;
-  border: 2px dashed var(--color-border-primary);
-  border-radius: var(--border-radius-md);
-  background: var(--color-bg-secondary);
-  color: var(--color-text-muted);
-  font-size: var(--font-size-xs);
-  font-family: var(--font-mono);
-  text-align: center;
   overflow: hidden;
-  position: relative;
   flex-shrink: 0;
 }
 
-.adBanner::before {
-  content: 'AD';
-  position: absolute;
-  top: 4px;
-  left: 8px;
-  font-size: 0.6rem;
-  font-weight: var(--font-weight-bold);
-  letter-spacing: 0.1em;
-  color: var(--color-text-muted);
-  opacity: 0.5;
-}
-
-.adLabel { color: var(--color-text-muted); opacity: 0.7; }
-
-/* Slot sizes */
+/* Slot sizes (fallback dimensions before ad loads) */
 .leaderboard { width: 728px; height: 90px; max-width: 100%; }
 .rectangle   { width: 300px; height: 250px; max-width: 100%; }
 .mobile      { width: 320px; height: 50px;  max-width: 100%; }
