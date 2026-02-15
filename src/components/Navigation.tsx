@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { useState, FormEvent } from 'react';
+import { useState, useRef, useEffect, FormEvent } from 'react';
 import { useSession, signOut } from 'next-auth/react';
 import { useTheme } from './ThemeProvider';
 import styles from './Navigation.module.css';
@@ -13,6 +13,28 @@ export default function Navigation() {
   const { theme, toggleTheme } = useTheme();
   const { data: session } = useSession();
   const [query, setQuery] = useState('');
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [ip, setIp] = useState<string | null>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!session?.user) {
+      fetch('https://api.ipify.org?format=json')
+        .then(r => r.json())
+        .then((d: { ip: string }) => setIp(d.ip))
+        .catch(() => {});
+    }
+  }, [session]);
+
+  useEffect(() => {
+    function handleOutsideClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) {
+        setMenuOpen(false);
+      }
+    }
+    if (menuOpen) document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, [menuOpen]);
 
   function isActive(href: string) {
     if (href === '/') return pathname === '/' || pathname.startsWith('/guide');
@@ -26,6 +48,8 @@ export default function Navigation() {
       setQuery('');
     }
   }
+
+  const userIdentifier = session?.user?.email ?? session?.user?.name ?? null;
 
   return (
     <>
@@ -67,22 +91,14 @@ export default function Navigation() {
             />
           </form>
 
-          <button
-            onClick={toggleTheme}
-            className={styles.themeToggle}
-            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} mode`}
-          >
-            {theme === 'light' ? '🌙' : '☀️'}
-          </button>
-
-          {session?.user ? (
+          <div className={styles.userMenu} ref={menuRef}>
             <button
-              onClick={() => signOut({ callbackUrl: '/' })}
-              className={styles.loginBtn}
-              aria-label="Sign out"
-              title={`Signed in as ${session.user.name ?? session.user.email}`}
+              onClick={() => setMenuOpen(o => !o)}
+              className={`${styles.loginBtn} ${menuOpen ? styles.loginBtnActive : ''}`}
+              aria-label="User menu"
+              aria-expanded={menuOpen}
             >
-              {session.user.image ? (
+              {session?.user?.image ? (
                 <img
                   src={session.user.image}
                   alt={session.user.name ?? 'User'}
@@ -97,14 +113,61 @@ export default function Navigation() {
                 </svg>
               )}
             </button>
-          ) : (
-            <Link href="/login" className={styles.loginBtn} aria-label="Login">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-                <circle cx="12" cy="7" r="4"/>
-              </svg>
-            </Link>
-          )}
+
+            {menuOpen && (
+              <div className={styles.dropdown}>
+                <div className={styles.dropdownHeader}>
+                  {session?.user ? (
+                    <>
+                      <span className={styles.dropdownLabel}>Signed in as</span>
+                      <span className={styles.dropdownUserInfo}>{userIdentifier}</span>
+                    </>
+                  ) : (
+                    <>
+                      <span className={styles.dropdownLabel}>Your IP</span>
+                      <span className={styles.dropdownUserInfo}>{ip ?? '…'}</span>
+                    </>
+                  )}
+                </div>
+
+                <div className={styles.dropdownDivider} />
+
+                <Link
+                  href="/settings"
+                  className={styles.dropdownItem}
+                  onClick={() => setMenuOpen(false)}
+                >
+                  Settings
+                </Link>
+
+                <button
+                  className={styles.dropdownItem}
+                  onClick={() => { toggleTheme(); setMenuOpen(false); }}
+                >
+                  {theme === 'light' ? 'Dark mode' : 'Light mode'}
+                </button>
+
+                <div className={styles.dropdownDivider} />
+
+                {session?.user ? (
+                  <button
+                    className={`${styles.dropdownItem} ${styles.dropdownItemDanger}`}
+                    onClick={() => { signOut({ callbackUrl: '/' }); setMenuOpen(false); }}
+                  >
+                    Sign out
+                  </button>
+                ) : (
+                  <Link
+                    href="/login"
+                    className={styles.dropdownItem}
+                    onClick={() => setMenuOpen(false)}
+                  >
+                    Sign in
+                  </Link>
+                )}
+              </div>
+            )}
+          </div>
         </div>
       </nav>
 
