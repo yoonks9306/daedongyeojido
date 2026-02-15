@@ -7,5 +7,5 @@ export const metadata: Metadata = {
 };
 
 export default function GuidePage() {
-  return <GuideExplorer tabs={guideTabs} />;
+  return <GuideExplorer tabs={guideTabs} initialGroupId={guideTabs[0]?.groups[0]?.id} />;
 }

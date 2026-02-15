@@ -71,6 +71,12 @@
   border-radius: var(--border-radius-md);
 }
 
+.leftLinkActive {
+  color: var(--color-text-primary);
+  background: color-mix(in srgb, var(--color-accent), transparent 88%);
+  border: 1px solid color-mix(in srgb, var(--color-accent), transparent 70%);
+}
+
 .leftLink:hover,
 .tocLink:hover {
   color: var(--color-text-primary);

@@ -147,3 +147,12 @@
 - Changed exchange amount input from numeric spinner to plain text input (`inputMode="decimal"`)
 - Added flag indicators for USD/JPY/CNY in rate cards and dropdown options
 - Build verified after changes: 37 routes generated, TypeScript pass
+
+## 2026-02-16 — Codex (GPT-5) — Guide nav model split + content enrichment
+
+- Removed numbering in top guide tabs (plain text labels only)
+- Changed left guide nav from `#` anchors to per-domain URLs via new route: `/guide/[groupId]`
+- Kept right panel as true in-page TOC (entry headers within current domain page)
+- Updated Guide explorer flow to render one selected domain document at a time
+- Expanded guide content density with additional real-world friction entries across all major domains
+- Build verified after changes: 37 routes generated, TypeScript pass
