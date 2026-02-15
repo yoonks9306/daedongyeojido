@@ -10,33 +10,35 @@
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **Phase 2 Authentication**: NextAuth.js v5 installed and wired up
-  - `src/auth.ts` — Google + GitHub providers configured
-  - `src/app/api/auth/[...nextauth]/route.ts` — API handler
-  - `src/components/AuthProvider.tsx` — SessionProvider wrapper
-  - `src/app/layout.tsx` — wrapped with AuthProvider
-  - `src/app/login/page.tsx` — real `signIn()` calls (OAuth working, email/pass stubbed)
-  - `src/components/Navigation.tsx` — shows user avatar when logged in, click to sign out
-  - `.env.example` committed to repo
+- **Phase 2 Authentication**: NextAuth.js v5 fully wired up + locally verified
+  - GitHub OAuth working locally (login → avatar in nav → sign out)
+  - `.env.local` filled: `AUTH_SECRET`, `AUTH_GITHUB_ID`, `AUTH_GITHUB_SECRET`
+  - Google OAuth credentials not yet set up (optional — GitHub alone is fine for now)
+  - `SESSION_LOG.md` created for chronological agent history
+  - `AGENT_INSTRUCTION.md` stale `frontend/` path fixed
 
 ### Currently blocked on (needs human action)
-- **OAuth credentials NOT yet filled in** → `.env.local` is empty. User needs to:
-  1. Generate `AUTH_SECRET`: run `openssl rand -base64 32`
-  2. Create Google OAuth app → get `AUTH_GOOGLE_ID` + `AUTH_GOOGLE_SECRET`
-  3. Create GitHub OAuth app → get `AUTH_GITHUB_ID` + `AUTH_GITHUB_SECRET`
-  4. Fill in `.env.local` (never commit this file)
-  5. Add same env vars to Vercel Dashboard → Settings → Environment Variables
+- **Vercel production env vars not set** → OAuth won't work on `daedongyeojido.vercel.app` yet
+  1. Vercel Dashboard → Settings → Environment Variables → add:
+     - `AUTH_SECRET` (same value as .env.local)
+     - `AUTH_GITHUB_ID` + `AUTH_GITHUB_SECRET`
+     - `NEXTAUTH_URL=https://daedongyeojido.vercel.app`
+  2. GitHub OAuth App → add production callback URL:
+     `https://daedongyeojido.vercel.app/api/auth/callback/github`
+  3. Redeploy on Vercel after adding env vars
 
 ### Next task for incoming agent
-1. Verify OAuth works locally after credentials are filled in
-2. Add `AUTH_SECRET` + OAuth credentials to Vercel environment variables (user will do this in Vercel UI)
-3. Proceed to **Phase 3 — Database** (Supabase recommended)
+1. Confirm Vercel env vars set + production OAuth working (user action above)
+2. Proceed to **Phase 3 — Database** (Supabase recommended)
+   - Create Supabase project, connect to Vercel
+   - Schema: User, WikiArticle, CommunityPost, Vote, Comment
+   - Migrate static `.ts` data files → DB seed
 
 ### Recent git commits
+- `6306655` docs: add SESSION_LOG.md and fix stale path in AGENT_INSTRUCTION.md
+- `04d2b2a` chore: add agent handoff protocol + fix page title
 - `285045d` feat: add NextAuth.js v5 authentication (Google + GitHub OAuth)
 - `b8bfc87` fix: add vercel.json and rename package to korwiki
-- `77249e6` refactor: move Next.js app from frontend/ to repo root
-- `b1f0a81` rename CLAUDE.md → AGENT_INSTRUCTION.md, PROJECT.md → MASTERPLAN.md
 
 ---
 
@@ -205,8 +207,8 @@ Defined in `src/app/globals.css`.
 - [x] Add `SessionProvider` to root layout (via `AuthProvider.tsx`)
 - [x] Update `/login/page.tsx` to use real `signIn()` (OAuth) + error message for email
 - [x] Session-aware Navigation (avatar when logged in, click to sign out)
-- [ ] **BLOCKED**: Fill OAuth credentials in `.env.local` (human action required)
-- [ ] Add env vars to Vercel dashboard
+- [x] Fill OAuth credentials in `.env.local` (GitHub OAuth verified locally)
+- [ ] Add env vars to Vercel dashboard + configure production callback URL
 - [ ] Protected routes: community posting, wiki editing
 - [ ] User profile page (`/profile/[username]`) — Phase 3 dependency
 

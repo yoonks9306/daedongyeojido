@@ -53,4 +53,6 @@
 - Fixed page title: `src/app/page.tsx` metadata → `'KorWiki'`
 - Rewrote `MASTERPLAN.md` — added Section 0 (Current State) and Agent Handoff Protocol
 - Created `SESSION_LOG.md` (this file)
-- **Blocked**: `.env.local` still empty — OAuth credentials needed (see MASTERPLAN.md Section 0)
+- GitHub OAuth App created; `.env.local` filled with AUTH_SECRET + GitHub credentials
+- **GitHub OAuth verified working locally** (login → avatar in nav → sign out)
+- Remaining: Vercel env vars + production callback URL (human action, see MASTERPLAN.md § 0)
