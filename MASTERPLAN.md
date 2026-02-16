@@ -10,38 +10,40 @@
 ## 0. CURRENT STATE (Update this every session — AI agents must read + write here)
 
 ### Last completed work
-- **Wiki UX stabilization + footnote/ads polish session** (this session):
-  - Unified wiki/guide TOC color behavior (visited-link lock issue fixed with explicit `:visited` and active styles)
-  - Added in-page navigation behavior using `history.replaceState` so heading clicks do not pollute browser back history
-  - Implemented Namu-style footnote sample migration for `kakao-t` (`supabase/migrations/2026-02-16-kakao-t-footnotes-sample.sql`)
-  - References style finalized to show only hyperlinked `[n]` labels (no numeric prefix / no bullet marker)
-  - Removed inline wiki body ad, kept sidebar ad under `CONTENTS`
-  - Refactored `SidebarToC` heading ID normalization to avoid duplicate React keys (`heading-2` issue fixed)
-  - Build verified repeatedly after each change set (`npm run build` pass)
+- **Wiki heading bind bug 수정 2회 시도 (미해결)** — 상세 내역은 `SESSION_LOG.md` 최하단 참조
+  - 시도 1: key prop + rAF + MutationObserver → 실패
+  - 시도 2: SidebarToC 전면 재작성 (rAF 폴링, 클릭 위임, instant jump, replaceState 통일) → 빌드 통과, 사용자 미확인
+  - `GuideExplorer.tsx`도 instant scroll로 통일
+  - `.articleBody [id]` scroll-margin-top으로 각주 가림 이슈 수정
+- DB 마이그레이션 2건 실행 완료 확인 (comment-votes, kakao-t-footnotes)
 
 ### Currently blocked on
-- **Wiki heading interaction first-load bug (open)**: On first entry to some wiki documents, collapse/jump logic may not bind until manual refresh; issue remains partially reproducible and needs root-cause fix.
-- **AdSense approval/display status pending verification**: ads/code wiring is in place, but incoming agent should verify if approval is complete and if live ad fill is stable on production.
-- **DB migration apply check**:
-  - `supabase/migrations/2026-02-16-comment-votes.sql` (if still unapplied)
-  - `supabase/migrations/2026-02-16-kakao-t-footnotes-sample.sql` (to reflect latest footnote/reference format)
+- **Wiki heading interaction first-load bug (OPEN, 최우선)**:
+  - 증상: 위키 문서 간 client-side navigation시 collapse/jump 안 됨. 새로고침하면 작동.
+  - 추정 원인: Next.js RSC streaming에서 SidebarToC useEffect가 article-body DOM보다 먼저 실행
+  - 2회 시도 모두 실패. rAF 폴링도 해결 못함. **근본적으로 다른 접근 필요**.
+  - 후보 접근법: (A) 서버에서 TOC 데이터 파싱→props 전달, (B) ref callback으로 DOM ready signal, (C) useLayoutEffect, (D) route change event 감지
+  - 상세 분석: `SESSION_LOG.md` 하단 "근본 원인 분석" 참조
+- **AdSense approval pending**: 코드 wiring 완료, 승인 대기 중
 
 ### Key decision
 - 콘텐츠(위키 100+편 확장 등)는 나중에 채워넣기로 하고, **구조/기능 완성에 먼저 집중**하기로 결정
 
+### Uncommitted changes in working tree
+4개 파일 수정됨 (시도 2 코드, 빌드 통과):
+- `src/components/SidebarToC.tsx` — 전면 재작성
+- `src/components/WikiArticle.tsx` — key prop 추가
+- `src/components/WikiArticle.module.css` — [id] scroll-margin-top
+- `src/app/guide/GuideExplorer.tsx` — instant scroll
+→ 커밋 여부는 다음 에이전트/사용자 판단
+
 ### Next task for incoming agent
-1. **Fix wiki first-load heading bind issue**:
-   - Reproduce reliably on route transitions without refresh
-   - Stabilize ToC initialization/collapse binding without relying on remount hacks
-   - Keep current back-button behavior (`replaceState`) intact
-2. **Check AdSense current state on production**:
-   - Confirm approval status in AdSense dashboard
-   - Confirm real ads render (not placeholders) on leaderboard/sidebar slots
-   - If approved and stable, decide whether to reintroduce leaderboard placement in layout
-3. **DB/application sync verification**:
-   - Run/verify required migrations (comment votes + KakaoT footnote sample)
-   - Confirm content rendering matches latest reference formatting and link behavior
-4. Phase 7 polish backlog:
+1. **Fix wiki first-load heading bind issue (최우선)**:
+   - `SESSION_LOG.md` 하단의 시행착오 + 근본 원인 분석 반드시 읽을 것
+   - 워킹 트리의 시도 2 코드를 기반으로 디버깅하거나, 근본적으로 다른 접근 시도
+   - 핵심: SidebarToC의 useEffect 실행 시점에 article-body DOM이 존재하는지 확인
+   - `console.log`로 tryInit 폴링 횟수, contentEl 발견 시점 확인부터 시작 권장
+2. Phase 7 polish backlog:
    - Mobile hamburger nav
    - Loading states / skeleton screens
    - Error boundaries / 404 page
@@ -284,7 +286,7 @@ Defined in `src/app/globals.css`.
 | 4 | Mobile: no hamburger nav | Open | Tabs shrink but no dedicated mobile nav pattern |
 | 5 | Best post algorithm is client-side sort | Resolved | Score-based ranking (`upvotes × recency_weight`) implemented |
 | 6 | Email/password login disabled | Resolved | Credentials auth + register API implemented |
-| 7 | Wiki heading UX first-load bind instability | Open | Some docs require manual refresh before collapse/jump hooks attach |
+| 7 | Wiki heading UX first-load bind instability | Open | 2회 수정 시도 실패. Next.js RSC streaming 타이밍 이슈 추정. SESSION_LOG.md 하단 상세 분석 참조 |
 | 8 | AdSense approval/live fill status unclear | Open | Integration done; production approval/render state must be rechecked |
 
 ---

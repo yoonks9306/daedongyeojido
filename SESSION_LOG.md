@@ -217,3 +217,77 @@
   - Next agent should prioritize root-cause fix for this initialization race
 - Monetization handoff note:
   - AdSense wiring is present, but incoming agent must verify real approval + live ad fill status on production
+
+## 2026-02-16 — Claude (Opus) — Wiki first-load heading bind bug 수정 시도 (미해결, 인수인계)
+
+### 증상 (사용자 보고)
+- 위키 문서 간 **페이지 전환**(Next.js client-side navigation)시, heading collapse/jump 기능이 **첫 로드에 작동하지 않음**
+- **새로고침(F5)하면 정상 작동** — 즉 full page load에서는 문제 없음
+- 각주 링크(`#fn-1`, `#fn-2`) 클릭시 `pushState`로 히스토리에 쌓여서 **뒤로가기가 전 페이지가 아닌 앵커 히스토리를 순회**
+- 목차(TOC) 클릭이나 heading 클릭 시 smooth scroll 되는데, **나무위키처럼 instant jump로 바꿔달라는 요청**
+
+### 시도 1: 땜빵 수정 (실패)
+- `SidebarToC`에 `key={article.slug}` 추가 → React remount 강제
+- `requestAnimationFrame` + `MutationObserver` 조합으로 DOM 준비 감지
+- `scroll-margin-top` 셀렉터를 `h2[id], h3[id]` → `.articleBody [id]`로 확장 (각주 커버)
+- **결과**: 사용자 테스트 후 "수정 안됨, 아직도 새로고침해야 작동" 확인. 근본 해결 아님.
+
+### 시도 2: SidebarToC 전면 재작성 (빌드 통과, 사용자 미확인)
+변경 내용:
+1. **`SidebarToC.tsx` 전면 재작성**:
+   - `useCallback` 의존성 체인 전부 제거 → 순수 함수 `jumpTo()`, `getScrollOffset()`로 변경
+   - `MutationObserver` 제거 → `requestAnimationFrame` 폴링 루프 (최대 120회 ≈ 2초)
+   - 폴링 조건: `document.getElementById(contentId)`가 존재하고, 그 안에 `h2`가 1개 이상 있을 때 초기화
+   - `contentEl` 위에 **클릭 이벤트 위임** 추가: `a[href^="#"]` 모든 클릭을 가로채서 `replaceState` + instant jump 처리
+   - heading collapse toggle과 heading label click을 분리 (버튼=토글, label=점프)
+   - 모든 in-page navigation을 `history.replaceState`로 통일
+   - `behavior: 'instant'` 적용
+
+2. **`WikiArticle.tsx`**: `<div id="article-body">`에 `key={article.slug}` 추가 → 문서 전환시 DOM 완전 재생성 강제
+
+3. **`WikiArticle.module.css`**: `.articleBody [id]`에 `scroll-margin-top` 적용 (각주 포함)
+
+4. **`GuideExplorer.tsx`**: 가이드 페이지도 `behavior: 'instant'`로 통일
+
+- **빌드**: `npm run build` 통과 (54 pages)
+- **상태**: 미커밋, 사용자 확인 전 세션 종료
+
+### 근본 원인 분석 (다음 에이전트를 위한 추정)
+
+**핵심 문제**: Next.js App Router의 client-side navigation에서 `SidebarToC`의 `useEffect`가 실행되는 시점에 `article-body` DOM이 아직 준비되지 않았을 가능성.
+
+구체적으로:
+
+1. **Next.js RSC streaming + hydration 타이밍**:
+   - Server Component(`WikiArticlePage`)가 `dangerouslySetInnerHTML`로 content를 렌더링
+   - Client Component(`SidebarToC`)의 `useEffect`가 먼저 실행될 수 있음
+   - rAF 폴링으로 이를 해결하려 했으나, `key` prop에 의한 React remount가 DOM 재생성과 동기화되지 않을 수 있음
+
+2. **`key` prop의 한계**:
+   - `key={article.slug}`로 SidebarToC를 remount해도, 같은 렌더 사이클에서 `article-body` div도 `key`로 재생성되므로 **두 컴포넌트의 mount 순서가 보장되지 않음**
+   - SidebarToC의 effect가 article-body보다 먼저 실행되면, 폴링 시작 시점에 article-body가 아직 DOM에 없음
+
+3. **가능한 근본 해결 방향**:
+   - **방향 A**: `SidebarToC`를 Server Component 내부에서 article content와 같은 레벨에서 렌더링하되, TOC 데이터를 서버에서 파싱하여 props로 전달 (DOM 의존성 제거)
+   - **방향 B**: `article-body` div에 `ref` callback을 사용하여, DOM이 실제로 mount된 후 SidebarToC에 signal을 보내는 방식 (예: Context, state lift, 또는 custom event)
+   - **방향 C**: `useEffect` 대신 `useLayoutEffect` + DOM readiness check 조합
+   - **방향 D**: Next.js의 `useSearchParams`나 route change event를 감지하여 re-init 트리거
+
+4. **클릭 이벤트 위임이 안 걸리는 이유**:
+   - 폴링이 `contentEl`을 찾지 못하면 `addEventListener('click', onAnchorClick)`가 실행 안 됨
+   - 즉 heading collapse도, 각주 replaceState 처리도, TOC 엔트리 빌드도 전부 안 됨
+   - → 이것이 "새로고침하면 되는데 네비게이션하면 안 되는" 현상의 직접 원인
+
+5. **검증해야 할 것**:
+   - `console.log`로 `tryInit` 폴링이 몇 번 도는지, `contentEl`을 찾는 시점이 언제인지 확인
+   - React DevTools에서 SidebarToC의 mount/unmount 타이밍과 article-body의 DOM 존재 시점 비교
+   - `key` prop이 실제로 remount를 유발하는지 (같은 slug로 같은 페이지 재진입 시 key가 안 바뀔 수 있음)
+
+### 현재 워킹 트리 상태
+미커밋 변경 파일 4개:
+- `src/components/SidebarToC.tsx` (전면 재작성)
+- `src/components/WikiArticle.tsx` (key prop 추가)
+- `src/components/WikiArticle.module.css` ([id] scroll-margin-top)
+- `src/app/guide/GuideExplorer.tsx` (instant scroll)
+
+→ 시도 2의 코드가 워킹 트리에 있음. 빌드는 통과하나 사용자 확인 전. 다음 에이전트가 이 코드를 기반으로 디버깅하거나, 근본적으로 다른 접근(방향 A~D)을 시도할 것을 권장.

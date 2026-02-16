@@ -25,7 +25,7 @@ export default function WikiArticle({ article, allArticles }: WikiArticleProps) 
     <div className={styles.articlePage}>
       {/* Sidebar: ToC + ad */}
       <aside className={styles.sidebar}>
-        <SidebarToC contentId="article-body" observeKey={article.slug} />
+        <SidebarToC key={article.slug} contentId="article-body" observeKey={article.slug} />
         <AdBanner slot="rectangle" />
       </aside>
 
@@ -71,6 +71,7 @@ export default function WikiArticle({ article, allArticles }: WikiArticleProps) 
         )}
 
         <div
+          key={article.slug}
           id="article-body"
           className={styles.articleBody}
           dangerouslySetInnerHTML={{ __html: article.content }}

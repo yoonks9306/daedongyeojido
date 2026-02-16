@@ -231,8 +231,7 @@
   line-height: var(--line-height-relaxed);
   clear: both;
 }
-.articleBody h2[id],
-.articleBody h3[id] {
+.articleBody [id] {
   scroll-margin-top: calc(var(--nav-height) + var(--ad-banner-height) + var(--spacing-4));
 }
 .articleBody sup {

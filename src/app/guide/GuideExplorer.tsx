@@ -103,7 +103,7 @@ export default function GuideExplorer({
     const el = document.getElementById(id);
     if (!el) return;
     const y = el.getBoundingClientRect().top + window.scrollY - scrollOffset;
-    window.scrollTo({ top: y, behavior: 'smooth' });
+    window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior });
     history.replaceState(null, '', `#${id}`);
     setActiveEntryId(id);
   };
