@@ -43,9 +43,56 @@
   border-bottom: 1px solid var(--color-border-primary);
 }
 
-.tocList  { list-style: none; padding: 0; margin: 0; }
-.tocItem  { margin-bottom: 2px; }
+.tocList {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
 
+.tocItem {
+  margin-bottom: 2px;
+}
+
+/* Namu Style Sidebar Items */
+.tocEntryRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  /* spacing-2ish */
+  padding: 3px 0;
+  line-height: 1.4;
+}
+
+.tocItemH3 {
+  padding-left: var(--spacing-5);
+}
+
+.tocNumLink {
+  color: var(--color-text-link);
+  /* Keep link color for numbers? Or make them white too? User said "number color is fine". */
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.tocNumLink:hover {
+  text-decoration: underline;
+}
+
+.tocNumActive {
+  color: var(--color-accent) !important;
+  font-weight: var(--font-weight-bold);
+}
+
+.tocTextLabel {
+  /* User requested "White". Assuming dark sidebar/bg. */
+  color: #ffffff;
+  font-size: var(--font-size-sm);
+  /* Plain text, no pointer events unless we want it selectable */
+}
+
+/* Legacy .tocLink for fallback or other components */
 .tocLink {
   display: block;
   font-size: var(--font-size-sm);
@@ -56,87 +103,104 @@
   text-decoration: none;
   line-height: 1.45;
 }
-.tocLink:visited {
-  color: var(--color-text-secondary);
-}
+
 .tocLink:hover {
   background: var(--color-bg-tertiary);
   color: var(--color-text-primary);
-  text-decoration: none;
-}
-.tocLinkActive {
-  color: var(--color-accent) !important;
-  background: color-mix(in srgb, var(--color-accent), transparent 90%);
-  font-weight: var(--font-weight-medium);
-}
-.tocLinkActive:visited {
-  color: var(--color-accent) !important;
-}
-.tocLinkH3 {
-  padding-left: var(--spacing-5);
-  font-size: var(--font-size-xs);
 }
 
-.collapsibleHeading {
+/* ---- Namu Style In-Body Heading Interactions ---- */
+/* Note: These classes are injected by parseWikiContent */
+
+/* ---- Namu Style In-Body Heading Interactions ---- */
+/* Note: These classes are injected by parseWikiContent */
+
+:global(.namu-wiki-heading) {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  /* User requested original sizes. Removing font-size: inherit restores H2/H3 UA styles */
+  /* font-size: inherit; <--- Removed */
+  /* font-weight: inherit; <--- Removed */
+  /* line-height: inherit; <--- Removed */
+  margin-bottom: var(--spacing-3);
+  scroll-margin-top: calc(var(--nav-height) + var(--ad-banner-height) + var(--spacing-4));
+}
+
+:global(.namu-wiki-num) {
+  color: var(--color-accent);
+  cursor: pointer;
+  margin-right: 4px;
+  user-select: none;
+  font-size: 0.9em;
+  /* relative to heading size */
+  font-weight: var(--font-weight-bold);
+}
+
+:global(.namu-wiki-num):hover {
+  text-decoration: underline;
+}
+
+:global(.namu-wiki-content-wrapper) {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: var(--spacing-3);
+  /* Icon to far right */
+  flex: 1;
+  /* Take all remaining space */
   cursor: pointer;
-  user-select: none;
+}
+
+:global(.namu-wiki-content-wrapper):hover :global(.namu-wiki-text) {
+  text-decoration: none;
+}
+
+:global(.namu-wiki-text) {
+  font-weight: var(--font-weight-bold);
+  /* User requested bold */
+  /* Allow text to wrap if needed, but usually headings are short */
+}
+
+:global(.namu-wiki-text) a {
+  /* Links inside heading should look like links? Or inherit? User said "Title Text if Link -> Navigate" */
   color: inherit;
+  text-decoration: none;
 }
 
-.collapsibleHeading:hover,
-.collapsibleHeading:active,
-.collapsibleHeading:focus {
-  color: inherit;
+:global(.namu-wiki-text) a:hover {
+  text-decoration: underline;
 }
 
-.headingLabel {
-  min-width: 0;
-  color: inherit;
-}
-
-.headingActions {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--spacing-2);
-  flex-shrink: 0;
-}
-
-.sectionToggle {
-  color: var(--color-text-muted);
-  font-size: 1.05rem;
-  line-height: 1;
-}
-
-.sectionToggleBtn {
+:global(.namu-wiki-toggle) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 1.65rem;
-  height: 1.65rem;
-  border: 0;
-  border-radius: var(--border-radius-sm);
-  background: transparent;
-  color: inherit;
-  cursor: pointer;
-  padding: 0;
+  color: var(--color-text-muted);
+  user-select: none;
+  transition: transform 0.2s ease;
+  margin-left: 12px;
 }
 
-.sectionToggleBtn:hover,
-.sectionToggleBtn:focus-visible {
-  background: var(--color-bg-tertiary);
+:global(.namu-wiki-toggle) svg {
+  width: 1.5em;
+  /* Bigger icon relative to heading size */
+  height: 1.5em;
 }
+
+/* 
+   Rotation State:
+   - Default (Open): Down Arrow. 0deg.
+   - Clicked (Collapsed): Right Arrow. -90deg.
+   This is handled via inline style in JS, but we set base transition here.
+*/
 
 .sectionBody {
   margin-bottom: var(--spacing-2);
 }
 
-.collapsed {
-  margin-bottom: var(--spacing-2);
-}
+
+/* ---- Sidebar / ToC ---- */
+
 
 /* ---- Main content area ---- */
 .main {
@@ -152,7 +216,9 @@
   border-bottom: 2px solid var(--color-accent);
 }
 
-.articleCategory { margin-bottom: var(--spacing-2); }
+.articleCategory {
+  margin-bottom: var(--spacing-2);
+}
 
 .articleTitle {
   font-size: var(--font-size-3xl);
@@ -231,14 +297,17 @@
   line-height: var(--line-height-relaxed);
   clear: both;
 }
+
 .articleBody [id] {
   scroll-margin-top: calc(var(--nav-height) + var(--ad-banner-height) + var(--spacing-4));
 }
+
 .articleBody sup {
   font-size: 0.72em;
   vertical-align: super;
   line-height: 0;
 }
+
 .articleBody::after {
   content: '';
   display: table;
@@ -281,6 +350,7 @@
   transition: background var(--transition-fast), border-color var(--transition-fast);
   text-decoration: none;
 }
+
 .relatedLink:hover {
   background: color-mix(in srgb, var(--color-accent), transparent 90%);
   border-color: var(--color-accent);
@@ -293,11 +363,24 @@
     grid-template-columns: 1fr;
     grid-template-areas: "main";
   }
-  .sidebar { display: none; }
-  .infobox { float: none; width: 100%; margin: 0 0 var(--spacing-4) 0; }
+
+  .sidebar {
+    display: none;
+  }
+
+  .infobox {
+    float: none;
+    width: 100%;
+    margin: 0 0 var(--spacing-4) 0;
+  }
 }
 
 @media (max-width: 768px) {
-  .articlePage { padding-inline: var(--spacing-4); }
-  .articleTitle { font-size: var(--font-size-2xl); }
+  .articlePage {
+    padding-inline: var(--spacing-4);
+  }
+
+  .articleTitle {
+    font-size: var(--font-size-2xl);
+  }
 }

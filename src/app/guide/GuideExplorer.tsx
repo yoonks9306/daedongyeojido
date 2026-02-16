@@ -34,12 +34,19 @@ export default function GuideExplorer({
   }, [activeTab, initialGroupId]);
 
   const [activeEntryId, setActiveEntryId] = useState<string>(activeGroup?.entries[0]?.id ?? '');
+
+  // Collapsed state for entries (Set of IDs)
+  // Default: all expanded (empty set usually means expanded, or we track collapsed ones)
+  const [collapsedEntries, setCollapsedEntries] = useState<Set<string>>(new Set());
+
+  // Scroll offset logic same as Wiki SidebarToC
   const [scrollOffset, setScrollOffset] = useState(180);
 
   const resolveScrollOffset = useCallback(() => {
+    if (typeof window === 'undefined') return;
     const root = getComputedStyle(document.documentElement);
     const nav = Number.parseInt(root.getPropertyValue('--nav-height'), 10) || 56;
-    const ad = Number.parseInt(root.getPropertyValue('--ad-banner-height'), 10) || 0;
+    const ad = Number.parseInt(root.getPropertyValue('--ad-banner-height'), 10) || 106;
     setScrollOffset(nav + ad + 16);
   }, []);
 
@@ -52,6 +59,7 @@ export default function GuideExplorer({
   useEffect(() => {
     if (!activeGroup) return;
     setActiveEntryId(activeGroup.entries[0]?.id ?? '');
+    setCollapsedEntries(new Set()); // Reset collapse state on group change
   }, [activeGroup]);
 
   const updateActiveEntry = useCallback(() => {
@@ -59,13 +67,12 @@ export default function GuideExplorer({
     const line = window.scrollY + scrollOffset + 2;
     let candidate = activeGroup.entries[0]?.id ?? '';
 
-    for (const entry of activeGroup.entries) {
+    // Reverse check
+    for (let i = activeGroup.entries.length - 1; i >= 0; i--) {
+      const entry = activeGroup.entries[i];
       const el = document.getElementById(entry.id);
-      if (!el) continue;
-      const top = el.getBoundingClientRect().top + window.scrollY;
-      if (top <= line) {
+      if (el && el.getBoundingClientRect().top + window.scrollY <= line) {
         candidate = entry.id;
-      } else {
         break;
       }
     }
@@ -78,38 +85,68 @@ export default function GuideExplorer({
 
     const syncFromHash = () => {
       const hashId = decodeURIComponent(window.location.hash.replace('#', ''));
+      if (hashId === 'toc') {
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+        return;
+      }
       if (hashId && activeGroup.entries.some((entry) => entry.id === hashId)) {
         setActiveEntryId(hashId);
+        // Force scroll if needed (though browser handles hash usually)
+        // logic similar to jumpTo
+        const el = document.getElementById(hashId);
+        if (el) {
+          const y = el.getBoundingClientRect().top + window.scrollY - scrollOffset;
+          window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior });
+        }
         return;
       }
       updateActiveEntry();
     };
 
     updateActiveEntry();
-    syncFromHash();
+    // We don't want to auto-sync hash on load if it conflicts with standard browser behavior,
+    // but enforcing offset is good.
+    setTimeout(syncFromHash, 50); // Small delay to let layout settle
 
-    window.addEventListener('scroll', updateActiveEntry, { passive: true });
     window.addEventListener('hashchange', syncFromHash);
     return () => {
-      window.removeEventListener('scroll', updateActiveEntry);
       window.removeEventListener('hashchange', syncFromHash);
     };
-  }, [activeGroup, updateActiveEntry]);
+  }, [activeGroup, scrollOffset]);
 
   if (!activeTab || !activeGroup) return null;
 
-  const onTocClick = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
-    event.preventDefault();
+  const jumpTo = (id: string) => {
+    if (id === 'toc') {
+      window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+      history.replaceState(null, '', '#toc');
+      return;
+    }
     const el = document.getElementById(id);
     if (!el) return;
     const y = el.getBoundingClientRect().top + window.scrollY - scrollOffset;
     window.scrollTo({ top: y, behavior: 'instant' as ScrollBehavior });
     history.replaceState(null, '', `#${id}`);
-    setActiveEntryId(id);
+  };
+
+  const onTocClick = (event: MouseEvent<HTMLAnchorElement>, id: string) => {
+    event.preventDefault();
+    jumpTo(id);
+  };
+
+  const toggleEntry = (id: string) => {
+    const newSet = new Set(collapsedEntries);
+    if (newSet.has(id)) {
+      newSet.delete(id);
+    } else {
+      newSet.add(id);
+    }
+    setCollapsedEntries(newSet);
   };
 
   return (
     <div className={styles.guidePage}>
+      {/* ... Top Tabs ... */}
       <div className={styles.topTabs} role="tablist" aria-label="Guide categories">
         {tabs.map((tab) => (
           <button
@@ -153,33 +190,79 @@ export default function GuideExplorer({
             <h2 className={styles.sectionTitle}>{activeGroup.title}</h2>
             <p className={styles.sectionDesc}>{activeGroup.description}</p>
             <ul className={styles.entryList}>
-              {activeGroup.entries.map((entry) => (
-                <li key={entry.id} id={entry.id} className={styles.entry}>
-                  <h3 className={styles.entryTitle}>{entry.title}</h3>
-                  <div
-                    className={styles.entryBody}
-                    dangerouslySetInnerHTML={{ __html: entry.content }}
-                  />
-                </li>
-              ))}
+              {activeGroup.entries.map((entry, index) => {
+                const entryNum = `${index + 1}.`; // 1., 2., ...
+                const isCollapsed = collapsedEntries.has(entry.id);
+
+                return (
+                  <li key={entry.id} id={entry.id} className={styles.entry}>
+                    {/* Namu Style Heading */}
+                    <div className={styles.namuEntryHeading}>
+                      <span
+                        className={styles.namuEntryNum}
+                        onClick={() => jumpTo('toc')}
+                        title="Go to Table of Contents"
+                      >
+                        {entryNum}
+                      </span>
+                      <div
+                        className={styles.namuEntryContentWrapper}
+                        onClick={() => toggleEntry(entry.id)}
+                        title="Toggle Section"
+                      >
+                        <span className={styles.namuEntryTitleSpan}>
+                          {entry.title}
+                        </span>
+                        <span
+                          className={styles.namuEntryToggle}
+                          style={{
+                            transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)',
+                            transition: 'transform 0.2s ease',
+                            display: 'inline-flex'
+                          }}
+                        >
+                          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="6 9 12 15 18 9"></polyline>
+                          </svg>
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* Entry Body */}
+                    <div
+                      className={styles.entryBody}
+                      style={{ display: isCollapsed ? 'none' : 'block', marginTop: '12px' }}
+                      dangerouslySetInnerHTML={{ __html: entry.content }}
+                    />
+                  </li>
+                );
+              })}
             </ul>
           </section>
         </main>
 
-        <aside className={styles.rightToc}>
+        <aside className={styles.rightToc} id="toc"> {/* Added id=toc */}
           <p className={styles.tocTitle}>On this page</p>
           <ul className={styles.tocList}>
-            {activeGroup.entries.map((entry) => (
-              <li key={entry.id}>
-                <a
-                  className={`${styles.tocLink} ${activeEntryId === entry.id ? styles.tocLinkActive : ''}`}
-                  href={`#${entry.id}`}
-                  onClick={(event) => onTocClick(event, entry.id)}
-                >
-                  {entry.title}
-                </a>
-              </li>
-            ))}
+            {activeGroup.entries.map((entry, index) => {
+              const entryNum = `${index + 1}.`;
+              return (
+                <li key={entry.id}>
+                  <div className={styles.tocEntryRow}>
+                    <a
+                      className={styles.tocNumLink}
+                      href={`#${entry.id}`}
+                      onClick={(event) => onTocClick(event, entry.id)}
+                    >
+                      {entryNum}
+                    </a>
+                    <span className={styles.tocTextLabel}>
+                      {entry.title}
+                    </span>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
         </aside>
       </div>

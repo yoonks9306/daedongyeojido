@@ -1,35 +1,22 @@
 'use client';
 
-import { useEffect, useState, useRef, type MouseEvent as ReactMouseEvent } from 'react';
+import { useEffect, useState } from 'react';
 import styles from './WikiArticle.module.css';
-
-interface TocEntry {
-  id: string;
-  text: string;
-  level: 2 | 3;
-}
+import type { TocEntry } from '@/lib/wiki-utils';
 
 interface SidebarToCProps {
   contentId: string;
-  observeKey?: string;
+  initialEntries: TocEntry[];
 }
 
-function slugify(input: string): string {
-  return input
-    .toLowerCase()
-    .trim()
-    .replace(/<[^>]+>/g, '')
-    .replace(/[^a-z0-9\u3131-\u318e\uac00-\ud7a3\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/-+/g, '-')
-    .replace(/^-|-$/g, '');
-}
-
-/** Compute scroll offset from CSS custom properties (nav + ad banner). */
+/** Compute scroll offset from CSS custom properties (nav + ad banner + padding). */
 function getScrollOffset(): number {
+  if (typeof window === 'undefined') return 180; // Fallback
+  // Namu layout: Fixed Nav (56px) + Fixed/Sticky Ad (106px) + Padding (16px) = ~178px
+  // We'll use a safer 180px or read from CSS if possible, but hardcoding for stability is fine given the request.
   const root = getComputedStyle(document.documentElement);
   const nav = Number.parseInt(root.getPropertyValue('--nav-height'), 10) || 56;
-  const ad = Number.parseInt(root.getPropertyValue('--ad-banner-height'), 10) || 0;
+  const ad = Number.parseInt(root.getPropertyValue('--ad-banner-height'), 10) || 106;
   return nav + ad + 16;
 }
 
@@ -42,218 +29,141 @@ function jumpTo(id: string) {
   history.replaceState(null, '', `#${id}`);
 }
 
-export default function SidebarToC({ contentId, observeKey }: SidebarToCProps) {
-  const [entries, setEntries] = useState<TocEntry[]>([]);
-  const [activeId, setActiveId] = useState<string>('');
-  const entriesRef = useRef<TocEntry[]>([]);
+export default function SidebarToC({ contentId, initialEntries }: SidebarToCProps) {
+  // No active section tracking needed as per user request.
+  // "CONTENTS 에서 스크롤 내리면 지금 내가 보고있는 페이지의 섹션 번호가 빨갛게 하이라이트되는 규칙이 있는데 그거 걍 없애주셈"
 
-  // ---- Main initialization: poll until content DOM is ready ----
+  // ---- Enrichment: Bind click handlers to server-rendered Namu spans ----
   useEffect(() => {
-    let cancelled = false;
-    let rafId: number;
-    let attempts = 0;
+    const contentEl = document.getElementById(contentId);
+    if (!contentEl) return;
+
     const cleanupCallbacks: Array<() => void> = [];
 
-    const tryInit = () => {
-      if (cancelled) return;
-      attempts += 1;
+    // 1. Intercept ALL in-page anchor clicks (footnotes, refs, #toc)
+    const onAnchorClick = (e: MouseEvent) => {
+      const anchor = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href^="#"]');
+      if (!anchor) return;
 
-      const contentEl = document.getElementById(contentId);
-      if (!contentEl || contentEl.querySelectorAll<HTMLHeadingElement>('h2').length === 0) {
-        // Content not ready yet — keep polling (cap at ~2s)
-        if (attempts < 120) {
-          rafId = requestAnimationFrame(tryInit);
-        }
+      const href = anchor.getAttribute('href');
+      if (!href || !href.startsWith('#')) return;
+
+      e.preventDefault();
+      const targetId = href.slice(1); // remove '#'
+
+      if (targetId === 'toc') {
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+        history.replaceState(null, '', '#toc');
+      } else {
+        jumpTo(targetId);
+      }
+    };
+    contentEl.addEventListener('click', onAnchorClick);
+    cleanupCallbacks.push(() => contentEl.removeEventListener('click', onAnchorClick));
+
+    // 2. Bind handlers for Namu-style interactive elements
+    const onContentClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      // Case A: Click Number -> Jump to TOC
+      if (target.closest('.namu-wiki-num') || (target.dataset && target.dataset.link === 'toc')) {
+        e.stopPropagation();
+        window.scrollTo({ top: 0, behavior: 'instant' as ScrollBehavior });
+        history.replaceState(null, '', '#toc');
         return;
       }
 
-      // ---- 1. Normalize heading IDs (deduplicate) ----
-      const usedIds = new Set<string>();
-      contentEl.querySelectorAll<HTMLHeadingElement>('h2, h3').forEach((heading, idx) => {
-        const raw = heading.id?.trim();
-        const textBase = slugify(heading.textContent ?? '');
-        const fallback = `${heading.tagName.toLowerCase()}-${idx + 1}`;
-        const base = raw || textBase || fallback;
-        let candidate = base;
-        let suffix = 2;
-        while (usedIds.has(candidate)) {
-          candidate = `${base}-${suffix}`;
-          suffix += 1;
+      // Case B: Click Content Wrapper -> Collapse/Expand Section
+      const wrapper = target.closest('.namu-wiki-content-wrapper');
+      if (wrapper) {
+        // If user clicked a Link inside the text, let it navigate.
+        if (target.tagName === 'A' || target.closest('a')) {
+          return;
         }
-        usedIds.add(candidate);
-        heading.id = candidate;
-      });
 
-      // ---- 2. Collapsible sections (Namu-style) ----
-      contentEl.querySelectorAll<HTMLHeadingElement>('h2').forEach((heading) => {
-        if (heading.dataset.collapsibleReady === 'true') return;
+        e.stopPropagation();
 
-        const originalText = heading.textContent?.trim() ?? '';
-        heading.dataset.tocLabel = originalText;
-        heading.classList.add(styles.collapsibleHeading);
-        heading.tabIndex = 0;
-        heading.setAttribute('role', 'button');
-        heading.setAttribute('aria-expanded', 'true');
+        const heading = wrapper.closest('h2, h3') as HTMLElement;
+        if (!heading) return;
 
-        // Heading label
-        const label = document.createElement('span');
-        label.className = styles.headingLabel;
-        label.textContent = originalText;
-        heading.textContent = '';
-        heading.appendChild(label);
+        // Toggle Logic
+        const toggleSpan = wrapper.querySelector('.namu-wiki-toggle') as HTMLElement;
 
-        // Toggle button
-        const actions = document.createElement('span');
-        actions.className = styles.headingActions;
-        const icon = document.createElement('span');
-        icon.className = styles.sectionToggle;
-        icon.textContent = '▾';
-        icon.setAttribute('aria-hidden', 'true');
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = styles.sectionToggleBtn;
-        btn.setAttribute('aria-label', `Collapse section ${originalText}`);
-        btn.appendChild(icon);
-        actions.appendChild(btn);
-        heading.appendChild(actions);
+        // Check if already wrapped
+        if (heading.dataset.wrapped === 'true') {
+          const sectionDiv = heading.nextElementSibling as HTMLElement;
+          if (sectionDiv && sectionDiv.classList.contains(styles.sectionBody)) {
+            const isHidden = sectionDiv.style.display === 'none';
+            sectionDiv.style.display = isHidden ? 'block' : 'none';
 
-        // Wrap following content until next h2
-        const body = document.createElement('div');
-        body.className = styles.sectionBody;
+            // Rotate Icon: Default (Open) = 0deg, Closed = -90deg (Right)
+            if (toggleSpan) {
+              toggleSpan.style.transform = isHidden ? 'rotate(0deg)' : 'rotate(-90deg)';
+            }
+          }
+          return;
+        }
+
+        // Lazy Wrapping Logic (First Interaction)
+        const bodyNodes: Node[] = [];
         let cursor = heading.nextSibling;
         while (cursor) {
           const next = cursor.nextSibling;
-          if (cursor instanceof HTMLHeadingElement && cursor.tagName === 'H2') break;
-          body.appendChild(cursor);
+          if (cursor instanceof Element && (cursor.tagName === 'H2' || (heading.tagName === 'H3' && cursor.tagName === 'H3'))) {
+            if (heading.tagName === 'H2' && cursor.tagName === 'H2') break;
+            if (heading.tagName === 'H3' && (cursor.tagName === 'H3' || cursor.tagName === 'H2')) break;
+            break;
+          }
+          bodyNodes.push(cursor);
           cursor = next;
         }
-        heading.parentNode?.insertBefore(body, cursor);
 
-        const toggleSection = () => {
-          const collapsed = body.style.display === 'none';
-          body.style.display = collapsed ? '' : 'none';
-          heading.classList.toggle(styles.collapsed, !collapsed);
-          heading.setAttribute('aria-expanded', String(collapsed));
-          icon.textContent = collapsed ? '▾' : '▸';
-        };
+        const sectionDiv = document.createElement('div');
+        sectionDiv.className = styles.sectionBody;
+        bodyNodes.forEach(node => sectionDiv.appendChild(node));
+        heading.parentNode?.insertBefore(sectionDiv, heading.nextSibling);
 
-        const onHeadingClick = (e: MouseEvent) => {
-          if ((e.target as HTMLElement).closest('button')) return;
-          jumpTo(heading.id);
-        };
-        const onKeydown = (e: KeyboardEvent) => {
-          if (e.key === 'Enter' || e.key === ' ') {
-            e.preventDefault();
-            jumpTo(heading.id);
-          }
-        };
-        const onToggle = (e: MouseEvent) => {
-          e.stopPropagation();
-          toggleSection();
-        };
-
-        heading.addEventListener('click', onHeadingClick);
-        heading.addEventListener('keydown', onKeydown);
-        btn.addEventListener('click', onToggle);
-        cleanupCallbacks.push(
-          () => heading.removeEventListener('click', onHeadingClick),
-          () => heading.removeEventListener('keydown', onKeydown),
-          () => btn.removeEventListener('click', onToggle),
-        );
-
-        heading.dataset.collapsibleReady = 'true';
-      });
-
-      // ---- 3. Intercept ALL in-page anchor clicks (footnotes, refs, etc) ----
-      //   Prevents browser default (pushState) → uses replaceState + instant jump
-      const onAnchorClick = (e: MouseEvent) => {
-        const anchor = (e.target as HTMLElement).closest<HTMLAnchorElement>('a[href^="#"]');
-        if (!anchor) return;
-        const href = anchor.getAttribute('href');
-        if (!href || !href.startsWith('#')) return;
-        e.preventDefault();
-        jumpTo(href.slice(1));
-      };
-      contentEl.addEventListener('click', onAnchorClick);
-      cleanupCallbacks.push(() => contentEl.removeEventListener('click', onAnchorClick));
-
-      // ---- 4. Build TOC entries ----
-      const seen = new Set<string>();
-      const parsed = Array.from(contentEl.querySelectorAll<HTMLHeadingElement>('h2, h3'))
-        .map((h) => {
-          if (seen.has(h.id)) return null;
-          seen.add(h.id);
-          return {
-            id: h.id,
-            text: h.dataset.tocLabel ?? h.textContent?.trim() ?? '',
-            level: Number(h.tagName[1]) as 2 | 3,
-          };
-        })
-        .filter((e): e is TocEntry => e !== null);
-
-      setEntries(parsed);
-      entriesRef.current = parsed;
+        // Initial toggle state -> HIDE (User clicked to collapse)
+        sectionDiv.style.display = 'none';
+        if (toggleSpan) {
+          toggleSpan.style.transform = 'rotate(-90deg)';
+        }
+        heading.dataset.wrapped = 'true';
+      }
     };
-
-    // Start polling immediately
-    tryInit();
+    contentEl.addEventListener('click', onContentClick);
+    cleanupCallbacks.push(() => contentEl.removeEventListener('click', onContentClick));
 
     return () => {
-      cancelled = true;
-      cancelAnimationFrame(rafId);
-      cleanupCallbacks.forEach((fn) => fn());
+      cleanupCallbacks.forEach(fn => fn());
     };
-  }, [contentId, observeKey]);
+  }, [contentId]);
 
-  // ---- Active section tracking on scroll ----
-  useEffect(() => {
-    if (entries.length === 0) return;
+  if (initialEntries.length === 0) return null;
 
-    const updateActive = () => {
-      const line = window.scrollY + getScrollOffset() + 2;
-      let candidate = entries[0].id;
-      for (const entry of entries) {
-        const el = document.getElementById(entry.id);
-        if (!el) continue;
-        if (el.getBoundingClientRect().top + window.scrollY <= line) {
-          candidate = entry.id;
-        } else {
-          break;
-        }
-      }
-      setActiveId(candidate);
-    };
-
-    updateActive();
-    window.addEventListener('scroll', updateActive, { passive: true });
-    return () => window.removeEventListener('scroll', updateActive);
-  }, [entries]);
-
-  if (entries.length === 0) return null;
-
-  const onTocClick = (e: ReactMouseEvent<HTMLAnchorElement>, id: string) => {
+  const onTocClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
     e.preventDefault();
     jumpTo(id);
-    setActiveId(id);
   };
 
   return (
-    <div className={styles.tocBox}>
+    <div className={styles.tocBox} id="toc">
       <p className={styles.tocTitle}>Contents</p>
       <ol className={styles.tocList}>
-        {entries.map((entry) => (
-          <li key={entry.id} className={styles.tocItem}>
-            <a
-              href={`#${entry.id}`}
-              onClick={(e) => onTocClick(e, entry.id)}
-              className={[
-                styles.tocLink,
-                entry.level === 3 ? styles.tocLinkH3 : '',
-                activeId === entry.id ? styles.tocLinkActive : '',
-              ].join(' ')}
-            >
-              {entry.text}
-            </a>
+        {initialEntries.map((entry) => (
+          <li key={entry.id} className={`${styles.tocItem} ${entry.level === 3 ? styles.tocItemH3 : ''}`}>
+            <div className={styles.tocEntryRow}>
+              <a
+                href={`#${entry.id}`}
+                onClick={(e) => onTocClick(e, entry.id)}
+                className={styles.tocNumLink}
+              >
+                {entry.number}
+              </a>
+              <span className={styles.tocTextLabel}>
+                {entry.text}
+              </span>
+            </div>
           </li>
         ))}
       </ol>

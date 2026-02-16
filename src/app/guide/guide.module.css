@@ -183,6 +183,112 @@
   margin-bottom: 0;
 }
 
+/* Namu-like Header Interactions for Guide */
+.namuEntryHeading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: var(--spacing-3);
+  scroll-margin-top: calc(var(--nav-height) + var(--ad-banner-height) + var(--spacing-4));
+}
+
+.namuEntryNum {
+  color: var(--color-accent);
+  font-weight: var(--font-weight-bold);
+  cursor: pointer;
+  user-select: none;
+  font-size: 0.9em;
+  margin-right: 4px;
+  /* increased spacing */
+}
+
+.namuEntryNum:hover {
+  text-decoration: underline;
+}
+
+.namuEntryContentWrapper {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  /* Icon to far right */
+  gap: 6px;
+  cursor: pointer;
+  flex: 1;
+}
+
+.namuEntryContentWrapper:hover .namuEntryTitleSpan {
+  text-decoration: none;
+}
+
+.namuEntryTitleSpan {
+  cursor: pointer;
+  font-size: var(--font-size-lg);
+  /* Increased from md to match H3-ish feel */
+  font-weight: var(--font-weight-bold);
+  /* Bold as requested */
+}
+
+.namuEntryToggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-text-muted);
+  user-select: none;
+  margin-left: 12px;
+}
+
+.namuEntryToggle svg {
+  width: 1.5em;
+  /* Bigger icon */
+  height: 1.5em;
+}
+
+.namuEntryToggle:hover {
+  color: var(--color-text-primary);
+}
+
+
+/* TOC Entry Row for Guide */
+.tocEntryRow {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+  padding: 4px 6px;
+  border-radius: var(--border-radius-md);
+  transition: background var(--transition-fast);
+}
+
+.tocEntryRow:hover {
+  background: var(--color-bg-secondary);
+}
+
+.tocNumLink {
+  color: var(--color-text-link);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.tocNumLink:hover {
+  text-decoration: underline;
+}
+
+.tocNumActive {
+  color: var(--color-accent) !important;
+  background: transparent;
+  /* Override leftLinkActive bg if applied */
+  font-weight: var(--font-weight-bold);
+}
+
+.tocTextLabel {
+  color: #ffffff;
+  font-size: var(--font-size-sm);
+}
+
+
+
 .rateWidget {
   border: 1px solid var(--color-border-primary);
   border-radius: var(--border-radius-md);

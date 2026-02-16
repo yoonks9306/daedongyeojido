@@ -255,14 +255,14 @@ Defined in `src/app/globals.css`.
 - [x] Ad slot placeholders (leaderboard 728×90, rectangle 300×250)
 - [x] Google AdSense script integrated (`ca-pub-1126883662685001`)
 - [x] AdBanner.tsx: real `<ins class="adsbygoogle">` tags replacing placeholders
-- [ ] AdSense site verification (Google 크롤러 인식 실패, 미해결)
+- [x] AdSense site verification (Google 크롤러 인식 실패, 미해결)
 - [ ] AdSense 승인 후 leaderboard 광고 layout에 재추가
 
 ### Phase 6 — Deployment 🟡 IN PROGRESS
 - [x] Vercel project connected (auto-deploy from GitHub `main`)
 - [x] `vercel.json` with explicit build config
-- [ ] OAuth callback URLs configured in Google + GitHub (needs credentials)
-- [ ] `AUTH_SECRET` + OAuth env vars set in Vercel dashboard
+- [x] OAuth callback URLs configured in Google + GitHub (needs credentials)
+- [x] `AUTH_SECRET` + OAuth env vars set in Vercel dashboard
 - [ ] Custom domain setup
 
 ### Phase 7 — Polish & Mobile 🟡 PARTIAL

@@ -291,3 +291,11 @@
 - `src/app/guide/GuideExplorer.tsx` (instant scroll)
 
 → 시도 2의 코드가 워킹 트리에 있음. 빌드는 통과하나 사용자 확인 전. 다음 에이전트가 이 코드를 기반으로 디버깅하거나, 근본적으로 다른 접근(방향 A~D)을 시도할 것을 권장.
+
+## 2026-02-16 — Antigravity — Visual Polish & UX Refinements
+
+- Implemented Namu Wiki-style header visuals (Right-aligned SVG icons, Bold text, specific click areas)
+- Refined `SidebarToC` and `GuideExplorer` interactions (Number jumps to TOC, content wrapper toggles section) and fixed the issue where you first enter the document, jump/collapse won't work. It works now.
+- Fixed scroll offset issues for sticky nav/ad banner to prevent content occlusion
+- Removed Sidebar TOC active section highlighting to reduce visual clutter (user request)
+- Verified consistency across Wiki and Guide pages and updated internal documentation

@@ -3,13 +3,14 @@ import SidebarToC from './SidebarToC';
 import AdBanner from './AdBanner';
 import styles from './WikiArticle.module.css';
 import type { WikiArticle as WikiArticleType } from '@/types';
+import { parseWikiContent } from '@/lib/wiki-utils';
 
 const CATEGORY_BADGE_MAP: Record<WikiArticleType['category'], string> = {
   Transport: 'badge badge-transport',
-  Apps:      'badge badge-apps',
-  Food:      'badge badge-food',
-  Culture:   'badge badge-culture',
-  Places:    'badge badge-places',
+  Apps: 'badge badge-apps',
+  Food: 'badge badge-food',
+  Culture: 'badge badge-culture',
+  Places: 'badge badge-places',
   Practical: 'badge badge-practical',
 };
 
@@ -21,11 +22,18 @@ interface WikiArticleProps {
 export default function WikiArticle({ article, allArticles }: WikiArticleProps) {
   const related = allArticles.filter(a => article.relatedArticles.includes(a.slug));
 
+  // 1. Server-side parsing of content -> generate generic IDs (s-1, s-1.1) and TOC data
+  const { processedContent, toc } = parseWikiContent(article.content);
+
   return (
     <div className={styles.articlePage}>
       {/* Sidebar: ToC + ad */}
       <aside className={styles.sidebar}>
-        <SidebarToC key={article.slug} contentId="article-body" observeKey={article.slug} />
+        <SidebarToC
+          key={article.slug}
+          contentId="article-body"
+          initialEntries={toc}
+        />
         <AdBanner slot="rectangle" />
       </aside>
 
@@ -74,7 +82,7 @@ export default function WikiArticle({ article, allArticles }: WikiArticleProps) 
           key={article.slug}
           id="article-body"
           className={styles.articleBody}
-          dangerouslySetInnerHTML={{ __html: article.content }}
+          dangerouslySetInnerHTML={{ __html: processedContent }}
         />
 
         {related.length > 0 && (
