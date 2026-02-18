@@ -23,6 +23,7 @@ export async function POST() {
 
   const error = new Error('Sentry manual verification event from /api/v1/admin/ops/sentry-test');
   const eventId = Sentry.captureException(error);
+  await Sentry.flush(2000);
 
   return NextResponse.json({
     ok: true,
