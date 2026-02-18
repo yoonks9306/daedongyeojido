@@ -52,6 +52,10 @@ export default function Navigation() {
   }
 
   const userIdentifier = session?.user?.email ?? session?.user?.name ?? null;
+  function getCurrentPathWithQuery() {
+    if (typeof window === 'undefined') return '/';
+    return `${window.location.pathname}${window.location.search}`;
+  }
 
   return (
     <>
@@ -101,7 +105,7 @@ export default function Navigation() {
             />
           </form>
 
-          <DropdownMenu>
+          <DropdownMenu modal={false}>
             <DropdownMenuTrigger asChild>
               <button
                 className="flex items-center justify-center w-[38px] h-[38px] border border-border rounded-full bg-card dark:bg-background text-muted-foreground transition-colors shrink-0 overflow-hidden p-0 hover:bg-muted hover:text-primary data-[state=open]:bg-muted data-[state=open]:border-primary"
@@ -148,13 +152,13 @@ export default function Navigation() {
               {session?.user ? (
                 <DropdownMenuItem
                   className="text-destructive focus:text-destructive"
-                  onSelect={() => signOut({ callbackUrl: '/' })}
+                  onSelect={() => signOut({ callbackUrl: getCurrentPathWithQuery() })}
                 >
                   Sign out
                 </DropdownMenuItem>
               ) : (
-                <DropdownMenuItem asChild>
-                  <Link href="/login">Sign in</Link>
+                <DropdownMenuItem onSelect={() => router.push(`/login?callbackUrl=${encodeURIComponent(getCurrentPathWithQuery())}`)}>
+                  Sign in
                 </DropdownMenuItem>
               )}
             </DropdownMenuContent>

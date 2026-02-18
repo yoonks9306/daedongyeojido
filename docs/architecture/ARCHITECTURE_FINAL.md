@@ -660,3 +660,32 @@ Status legend: `todo` | `in_progress` | `blocked` | `done`
 - Acceptance:
   1. Every frozen decision has a pass/fail check.
   2. Release gate blocks deploy on any critical fail.
+
+## 19. Editor Transition Note (2026-02-19)
+
+Current implementation has moved to **CommonMark + GFM base** with project-specific extensions.
+
+### 19.1 Implemented now
+- Editor runtime: CodeMirror 6
+- Markdown renderer: `marked` (GFM enabled)
+- Wiki link extension:
+  - `[[slug]]`
+  - `[[slug|Label]]`
+- Embed extension:
+  - `[YouTube|size|align](url)`
+  - `[Google Map|size|align](url)`
+- Infobox extension:
+  - `::infobox ... ::` (key-value block)
+
+### 19.2 Why this note exists
+This editor stack is functionally stable but still in product-definition phase for long-term wiki syntax governance.
+Open question remains whether to:
+1. keep CommonMark + controlled extensions, or
+2. formalize a stricter custom wiki dialect.
+
+### 19.3 Required next freeze
+Before large content expansion, freeze:
+- infobox key schema (required/optional)
+- embed option schema (size/align defaults)
+- parser error behavior on invalid extension blocks
+- compatibility policy for future syntax changes

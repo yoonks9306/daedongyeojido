@@ -16,6 +16,7 @@ export default async function NewWikiArticlePage() {
         category: 'Practical',
         summary: '',
         content: '',
+        contentFormat: 'html',
         tagsText: '',
         relatedArticlesText: '',
         baseRevisionNumber: 0,

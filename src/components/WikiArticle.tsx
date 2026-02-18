@@ -16,11 +16,18 @@ const CATEGORY_BADGE_MAP: Record<WikiArticleType['category'], string> = {
 interface WikiArticleProps {
   article: WikiArticleType;
   allArticles: WikiArticleType[];
+  viewingRevisionNumber?: number | null;
+  latestRevisionNumber?: number | null;
 }
 
-export default function WikiArticle({ article, allArticles }: WikiArticleProps) {
+export default function WikiArticle({
+  article,
+  allArticles,
+  viewingRevisionNumber = null,
+  latestRevisionNumber = null,
+}: WikiArticleProps) {
   const related = allArticles.filter(a => article.relatedArticles.includes(a.slug));
-  const { processedContent, toc } = parseWikiContent(article.content);
+  const { processedContent, toc } = parseWikiContent(article.content, article.contentFormat ?? 'html');
 
   return (
     <div className="grid grid-cols-[minmax(260px,300px)_1fr] gap-8 max-w-[1200px] mx-auto px-6 pt-6 items-start max-lg:grid-cols-1">
@@ -44,9 +51,14 @@ export default function WikiArticle({ article, allArticles }: WikiArticleProps) 
           </div>
           <h1 className="text-4xl font-bold leading-tight text-foreground m-0 mb-3 border-none p-0">{article.title}</h1>
           <div className="mb-3">
-            <Link href={`/wiki/${article.slug}/edit`} className="inline-block py-1 px-3 bg-card dark:bg-surface border border-border rounded-full text-sm text-primary no-underline transition-colors hover:bg-primary/10 hover:border-primary">
-              Edit Article
-            </Link>
+            <div className="flex gap-2 flex-wrap">
+              <Link href={`/wiki/${article.slug}/edit`} className="inline-block py-1 px-3 bg-card dark:bg-surface border border-border rounded-full text-sm text-primary no-underline transition-colors hover:bg-primary/10 hover:border-primary">
+                Edit Article
+              </Link>
+              <Link href={`/wiki/${article.slug}/history`} className="inline-block py-1 px-3 bg-card dark:bg-surface border border-border rounded-full text-sm text-primary no-underline transition-colors hover:bg-primary/10 hover:border-primary">
+                History
+              </Link>
+            </div>
           </div>
           <div className="flex flex-wrap gap-4 items-center text-xs text-muted-foreground">
             <span>
@@ -60,6 +72,16 @@ export default function WikiArticle({ article, allArticles }: WikiArticleProps) 
             ))}
           </div>
         </header>
+
+        {viewingRevisionNumber !== null && latestRevisionNumber !== null && viewingRevisionNumber !== latestRevisionNumber && (
+          <div className="mb-4 rounded-md border border-red-400/40 bg-red-500/15 px-4 py-3 text-sm text-red-200">
+            You are viewing an older revision (r{viewingRevisionNumber}).{' '}
+            <Link href={`/wiki/${article.slug}`} className="underline font-semibold text-red-100">
+              Go to latest revision
+            </Link>
+            .
+          </div>
+        )}
 
         <p className="text-lg leading-relaxed text-muted-foreground bg-card dark:bg-surface border-l-4 border-primary p-4 rounded-r-sm mb-6">{article.summary}</p>
 

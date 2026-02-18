@@ -5,7 +5,6 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { ensureCommunityAuthUser } from '@/lib/community-auth-user';
 import { ensureUserProfile } from '@/lib/user-profiles';
 import { assertWritesAllowed, EmergencyLockError } from '@/lib/emergency-lock';
-import { assertWriteRateLimit, WriteRateLimitError } from '@/lib/write-rate-limit';
 import { isValidWikiCategory, slugifyWikiTitle } from '@/lib/wiki-utils';
 
 type WikiRouteContext = {
@@ -17,6 +16,7 @@ type UpdateWikiBody = {
   category?: unknown;
   summary?: unknown;
   content?: unknown;
+  contentFormat?: unknown;
   tags?: unknown;
   relatedArticles?: unknown;
   baseRevisionNumber?: unknown;
@@ -44,6 +44,7 @@ export async function PATCH(request: Request, context: WikiRouteContext) {
   const category = typeof body.category === 'string' ? body.category : '';
   const summary = typeof body.summary === 'string' ? body.summary.trim() : '';
   const content = typeof body.content === 'string' ? body.content.trim() : '';
+  const contentFormat = body.contentFormat === 'html' ? 'html' : 'markdown';
   const tags = Array.isArray(body.tags)
     ? body.tags.filter((tag): tag is string => typeof tag === 'string').map((tag) => tag.trim()).filter(Boolean).slice(0, 20)
     : [];
@@ -87,13 +88,6 @@ export async function PATCH(request: Request, context: WikiRouteContext) {
 
   try {
     const actorId = await ensureCommunityAuthUser(session);
-    await assertWriteRateLimit({
-      table: 'wiki_revisions',
-      actorColumn: 'author_id',
-      actorId,
-      windowSec: 600,
-      max: 10,
-    });
     const profile = await ensureUserProfile({
       userId: actorId,
       preferredUsername: session.user?.email?.split('@')[0] ?? session.user?.name ?? null,
@@ -144,7 +138,13 @@ export async function PATCH(request: Request, context: WikiRouteContext) {
         revision_number: nextRevisionNumber,
         content,
         content_hash: createHash('sha256').update(content).digest('hex'),
+        content_format: contentFormat,
         summary: 'Wiki article update',
+        proposed_title: title,
+        proposed_category: category,
+        proposed_summary: summary,
+        proposed_tags: tags,
+        proposed_related_articles: relatedArticles,
         author_id: actorId,
         author_name: session.user?.name ?? session.user?.email ?? actorId,
         status: revisionStatus,
@@ -171,6 +171,7 @@ export async function PATCH(request: Request, context: WikiRouteContext) {
         category,
         summary,
         content,
+        content_format: contentFormat,
         tags,
         related_articles: relatedArticles,
         last_updated: new Date().toISOString().slice(0, 10),
@@ -192,9 +193,6 @@ export async function PATCH(request: Request, context: WikiRouteContext) {
       status: 'active',
     });
   } catch (error) {
-    if (error instanceof WriteRateLimitError) {
-      return NextResponse.json({ error: error.message }, { status: 429 });
-    }
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

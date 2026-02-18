@@ -1,36 +1,37 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# KorWiki (대동여지도)
 
-## Getting Started
+Production-oriented travel wiki/community platform built with Next.js + Supabase.
 
-First, run the development server:
+## Start
 
 ```bash
+cd /Users/jamesy/Documents/대동여지도
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Build
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+```bash
+npm run build
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+## Docs Entry
 
-## Learn More
+Read this order first:
+1. `MASTERPLAN.md` (current state + next task)
+2. `AGENT_INSTRUCTION.md` (execution rules)
+3. `docs/INDEX.md` (all detailed docs map)
 
-To learn more about Next.js, take a look at the following resources:
+Detailed docs live under `docs/`:
+- `docs/architecture/ARCHITECTURE_FINAL.md`
+- `docs/ops/OPERATIONS_PLAYBOOK.md`
+- `docs/qa/QA_RELEASE_GATE.md`
+- `docs/ui/UI_GUIDE.md`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Rule
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+If a new workstream markdown file is created, it must be registered in:
+1. `docs/INDEX.md`
+2. `MASTERPLAN.md` (Section 0)
+3. `SESSION_LOG.md`

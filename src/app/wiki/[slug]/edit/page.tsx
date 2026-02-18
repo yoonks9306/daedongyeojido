@@ -18,7 +18,7 @@ export default async function EditWikiArticlePage({ params }: Props) {
   const { slug } = await params;
   const { data } = await supabase
     .from('wiki_articles')
-    .select('id, slug, title, category, summary, content, tags, related_articles')
+    .select('id, slug, title, category, summary, content, content_format, tags, related_articles')
     .eq('slug', slug)
     .single();
 
@@ -43,6 +43,7 @@ export default async function EditWikiArticlePage({ params }: Props) {
         category: data.category as WikiArticle['category'],
         summary: data.summary,
         content: data.content,
+        contentFormat: (data.content_format ?? 'html') as 'markdown' | 'html',
         tagsText: (data.tags ?? []).join(', '),
         relatedArticlesText: (data.related_articles ?? []).join(', '),
         baseRevisionNumber: latestRevision?.revision_number ?? 0,

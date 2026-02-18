@@ -56,7 +56,7 @@ function LoginPageInner() {
   }
 
   async function handleOAuth(provider: 'google' | 'github') {
-    await signIn(provider, { callbackUrl: '/' });
+    await signIn(provider, { callbackUrl });
   }
 
   return (

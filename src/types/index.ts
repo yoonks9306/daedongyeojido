@@ -5,6 +5,7 @@ export interface WikiArticle {
   summary: string;
   infobox?: Record<string, string>;
   content: string;
+  contentFormat?: 'markdown' | 'html';
   relatedArticles: string[];
   tags: string[];
   lastUpdated: string;

@@ -5,7 +5,6 @@ import { supabaseAdmin } from '@/lib/supabase-admin';
 import { ensureCommunityAuthUser } from '@/lib/community-auth-user';
 import { ensureUserProfile } from '@/lib/user-profiles';
 import { assertWritesAllowed, EmergencyLockError } from '@/lib/emergency-lock';
-import { assertWriteRateLimit, WriteRateLimitError } from '@/lib/write-rate-limit';
 import { isValidWikiCategory, slugifyWikiTitle } from '@/lib/wiki-utils';
 
 type CreateWikiBody = {
@@ -13,6 +12,7 @@ type CreateWikiBody = {
   category?: unknown;
   summary?: unknown;
   content?: unknown;
+  contentFormat?: unknown;
   tags?: unknown;
   relatedArticles?: unknown;
 };
@@ -34,6 +34,7 @@ export async function POST(request: Request) {
   const category = typeof body.category === 'string' ? body.category : '';
   const summary = typeof body.summary === 'string' ? body.summary.trim() : '';
   const content = typeof body.content === 'string' ? body.content.trim() : '';
+  const contentFormat = body.contentFormat === 'html' ? 'html' : 'markdown';
   const tags = Array.isArray(body.tags)
     ? body.tags.filter((tag): tag is string => typeof tag === 'string').map((tag) => tag.trim()).filter(Boolean).slice(0, 20)
     : [];
@@ -62,13 +63,6 @@ export async function POST(request: Request) {
   try {
     await assertWritesAllowed();
     const authorId = await ensureCommunityAuthUser(session);
-    await assertWriteRateLimit({
-      table: 'wiki_revisions',
-      actorColumn: 'author_id',
-      actorId: authorId,
-      windowSec: 600,
-      max: 10,
-    });
     await ensureUserProfile({
       userId: authorId,
       preferredUsername: session.user?.email?.split('@')[0] ?? session.user?.name ?? null,
@@ -83,6 +77,7 @@ export async function POST(request: Request) {
         category,
         summary,
         content,
+        content_format: contentFormat,
         tags,
         related_articles: relatedArticles,
         infobox: null,
@@ -106,7 +101,13 @@ export async function POST(request: Request) {
         revision_number: 1,
         content,
         content_hash: createHash('sha256').update(content).digest('hex'),
+        content_format: contentFormat,
         summary: 'Initial revision',
+        proposed_title: title,
+        proposed_category: category,
+        proposed_summary: summary,
+        proposed_tags: tags,
+        proposed_related_articles: relatedArticles,
         author_id: authorId,
         author_name: session.user?.name ?? session.user?.email ?? authorId,
         status: 'active',
@@ -124,9 +125,6 @@ export async function POST(request: Request) {
   } catch (error) {
     if (error instanceof EmergencyLockError) {
       return NextResponse.json({ error: error.message }, { status: 503 });
-    }
-    if (error instanceof WriteRateLimitError) {
-      return NextResponse.json({ error: error.message }, { status: 429 });
     }
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });

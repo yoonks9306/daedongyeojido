@@ -631,3 +631,107 @@ Completed the full CSS Modules → Tailwind v4 migration. Every component now us
   - `supabase/migrations/2026-02-18-architecture-final-batch-6-ops-kpi.sql`
   - views: `ops_kpi_daily`, `ops_kpi_realtime`
 - Updated `OPERATIONS_PLAYBOOK.md` with fast verification steps for env setup, Sentry event check, and KPI SQL checks.
+
+## 2026-02-18 — Codex (GPT-5) — Documentation structure cleanup for multi-agent handoff
+
+- Reorganized detailed docs into `docs/`:
+  - `docs/architecture/ARCHITECTURE_FINAL.md`
+  - `docs/ops/OPERATIONS_PLAYBOOK.md`
+  - `docs/qa/QA_RELEASE_GATE.md`
+  - `docs/qa/QA_RUN_2026-02-18.md`
+  - `docs/ui/UI_GUIDE.md`
+- Added single doc map: `docs/INDEX.md`.
+- Rewrote `MASTERPLAN.md` as live handoff board only (status, next task, document governance).
+- Rewrote `AGENT_INSTRUCTION.md` with strict read order + mandatory new-md registration rule.
+- Updated `README.md` to point agents/developers to the new docs entry flow.
+
+## 2026-02-18 — Codex (GPT-5) — v3 Phase A kickoff (history + moderation queue)
+
+- Added wiki history page:
+  - `src/app/wiki/[slug]/history/page.tsx`
+  - includes revision list and side-by-side compare (`left` / `right` query selection)
+  - applies visibility filtering (public active-only, author own-pending, staff all)
+- Added staff moderation queue:
+  - `src/app/admin/moderation/page.tsx`
+  - `src/app/admin/moderation/ModerationQueueClient.tsx`
+  - combines pending revisions + open reports and calls existing moderation APIs
+- Updated wiki article action links to include `History`:
+  - `src/components/WikiArticle.tsx`
+- Build verified after changes: 66 routes generated, TypeScript pass.
+
+## 2026-02-18 — Codex (GPT-5) — v3 Phase A history suite completion + policy tweak
+
+- Expanded history flow to Namu-style per-revision actions:
+  - `View | RAW | Blame | Revert | Compare`
+  - pages added: `src/app/wiki/[slug]/raw/page.tsx`, `src/app/wiki/[slug]/blame/page.tsx`, `src/app/wiki/[slug]/compare/page.tsx`
+- Reworked history list UI and interactions:
+  - `src/app/wiki/[slug]/history/page.tsx`
+  - `src/app/wiki/[slug]/history/HistoryListClient.tsx`
+  - title now links to latest article page, action links and contributor names use theme primary color
+- Added old revision rendering mode on article page:
+  - `src/app/wiki/[slug]/page.tsx`
+  - `src/components/WikiArticle.tsx`
+  - supports `?rev={n}` and shows warning banner when viewing non-latest revision
+- Added shared revision access logic:
+  - `src/lib/wiki-revision-access.ts`
+  - public: active, author: own pending, staff: full visibility
+- Added revert API:
+  - `POST /api/v1/wiki/revisions/[id]/revert`
+  - file: `src/app/api/v1/wiki/revisions/[id]/revert/route.ts`
+  - behavior: creates a new revision from target revision; low-trust users create `pending`, trusted/staff create `active` and update article
+- Removed wiki write rate-limit (user decision for early growth):
+  - `src/app/api/v1/wiki/articles/route.ts`
+  - `src/app/api/v1/wiki/articles/[slug]/route.ts`
+- Build verified after changes (`npm run build`): routes include new `/wiki/[slug]/raw`, `/wiki/[slug]/blame`, `/wiki/[slug]/compare`, and `/api/v1/wiki/revisions/[id]/revert`.
+
+## 2026-02-18 — Codex (GPT-5) — v3 moderation review UX + markdown pivot baseline
+
+- Moderation queue changed to ticket-list flow:
+  - pending rows now open dedicated review page (`/admin/moderation/revisions/[id]`)
+  - queue actions moved out of list and into review detail page
+- Added revision review detail page and action client:
+  - `Approve / Reject / Hold` directly from ticket page
+  - compares current live document vs pending revision before moderation action
+- Compare UX upgraded to highlight changed character segments (not full-line blanket highlight for changed lines)
+- Added revert confirmation prompt in history list before creating revert revision
+- Added revision metadata migration (`batch-7`) and wired pending/approve flow to persist/apply:
+  - title/category/summary/tags/related changes, not only content
+- Added markdown pivot + prune migration (`batch-8`):
+  - `content_format` columns on `wiki_articles` / `wiki_revisions`
+  - keep-only 10 agreed docs (KakaoT, KTX, T-Money, Naver Map, Kakao Map, Convenience Store, Soju, PC Bang, Noraebang, Hongdae)
+- Implemented markdown-capable parser with HTML backward compatibility:
+  - `parseWikiContent(rawContent, contentFormat)`
+  - new writes/edits now persist `content_format = 'markdown'`
+- Editor upgraded with `Edit / Preview / Split` modes and markdown toolbar insert helpers:
+  - `H2/H3/Bold/Italic/Strike/Link/UL/OL/Ref`
+- Navigation auth UX improved:
+  - sign-in and sign-out now return to current page instead of always redirecting to home
+- Build verified after changes: routes include `/admin/moderation/revisions/[id]`; TypeScript/build pass.
+
+## 2026-02-18 — Codex (GPT-5) — v3 Phase B execute-all follow-up (editor/upload/moderation/content)
+
+- Added editor split-view and markdown-first UX in `src/app/wiki/WikiEditorForm.tsx`:
+  - modes: `Edit`, `Preview`, `Split`
+  - toolbar inserts markdown snippets (`H2/H3/Bold/Italic/Strike/Link/UL/OL/Ref`)
+- Added image upload-insert path in editor:
+  - hidden file picker + upload call to `POST /api/v1/uploads`
+  - successful upload auto-inserts `![alt](publicUrl)` markdown into content
+- Polished moderation revision ticket detail:
+  - displays live/pending content format badges
+  - added direct navigation links to live/pending/raw/blame/history views
+- Added keeper markdown re-seed migration:
+  - `supabase/migrations/2026-02-18-architecture-final-batch-9-keeper-markdown-seed.sql`
+  - upserts the 10 keeper documents with markdown templates and appends active revisions
+- Build verified after these changes (`npm run build` pass).
+
+## 2026-02-19 — Codex (GPT-5) — Editor parser pivot + handoff stabilization
+
+- Replaced wiki editor core with CodeMirror-based implementation (`src/app/wiki/WikiEditorForm.tsx`) for stable line numbering/selection/highlighting behavior.
+- Switched markdown rendering to `marked` (GFM enabled) in `src/lib/wiki-utils.ts`; preserved wiki-link conversion (`[[slug]]`, `[[slug|label]]`).
+- Added dedicated autocomplete API route `GET /api/v1/wiki/autocomplete` and rewired editor suggestion fetch to this endpoint.
+- Added embed options (`YouTube`/`Google Map`) with size+align parsing and CSS rendering support.
+- Added custom infobox block syntax `::infobox ... ::` parser + responsive styles for profile/fact-card layout.
+- Added migration `supabase/migrations/2026-02-18-architecture-final-batch-10-editor-manual.sql` to seed `Editor Manual` as a dedicated wiki article.
+- Replaced inline collapsible editor manual UI with formal manual-link notice in editor.
+- Hotfixed profile-dropdown/ToC interaction by setting `DropdownMenu` to non-modal in `src/components/Navigation.tsx`.
+- Build verification passed after all changes (`npm run build`).
