@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import styles from './guide.module.css';
 
 type Currency = 'USD' | 'JPY' | 'CNY';
 
@@ -17,6 +16,8 @@ const FLAG_BY_CURRENCY: Record<Currency, string> = {
   JPY: '🇯🇵',
   CNY: '🇨🇳',
 };
+
+const inputClass = 'border border-border rounded-sm bg-background text-foreground font-sans py-2 px-2.5';
 
 export default function ExchangeRateWidget() {
   const [currency, setCurrency] = useState<Currency>('USD');
@@ -50,45 +51,45 @@ export default function ExchangeRateWidget() {
   }, [amount, currency, data]);
 
   if (loading) {
-    return <div className={styles.rateWidget}>Loading today&apos;s rates...</div>;
+    return <div className="border border-border rounded-sm bg-card dark:bg-surface p-4 mb-6">Loading today&apos;s rates...</div>;
   }
 
   if (error || !data) {
-    return <div className={styles.rateWidgetError}>Rate feed unavailable right now.</div>;
+    return <div className="border border-primary/45 rounded-sm bg-primary/10 text-primary p-3 mb-6">Rate feed unavailable right now.</div>;
   }
 
   return (
-    <section className={styles.rateWidget}>
-      <div className={styles.rateHeader}>
-        <h3 className={styles.rateTitle}>Today&apos;s Exchange Snapshot</h3>
-        <span className={styles.rateDate}>As of {data.date}</span>
+    <section className="border border-border rounded-sm bg-card dark:bg-surface p-4 mb-6">
+      <div className="flex justify-between items-center gap-2 mb-3">
+        <h3 className="m-0 text-lg border-none">{`Today's Exchange Snapshot`}</h3>
+        <span className="text-xs text-muted-foreground">As of {data.date}</span>
       </div>
 
-      <div className={styles.rateCards}>
+      <div className="grid grid-cols-3 gap-2 mb-3 max-[860px]:grid-cols-1">
         {CURRENCIES.map((code) => (
-          <div key={code} className={styles.rateCard}>
-            <p className={styles.rateCode}>
-              <span className={styles.rateFlag}>{FLAG_BY_CURRENCY[code]}</span>
+          <div key={code} className="border border-border rounded-sm p-3 bg-background">
+            <p className="m-0 mb-1 text-xs text-muted-foreground flex items-center gap-1.5">
+              <span className="text-base">{FLAG_BY_CURRENCY[code]}</span>
               <span>{code}</span>
             </p>
-            <p className={styles.rateValue}>₩{data.rates[code].toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
-            <p className={styles.rateHint}>for 1 {code}</p>
+            <p className="m-0 font-semibold text-base">₩{data.rates[code].toLocaleString('en-US', { maximumFractionDigits: 2 })}</p>
+            <p className="mt-1 mb-0 text-xs text-muted-foreground">for 1 {code}</p>
           </div>
         ))}
       </div>
 
-      <div className={styles.rateCalculator}>
+      <div className="grid grid-cols-[120px_100px_1fr] gap-2 max-[860px]:grid-cols-1">
         <input
           type="text"
           inputMode="decimal"
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
-          className={styles.rateInput}
+          className={inputClass}
         />
         <select
           value={currency}
           onChange={(event) => setCurrency(event.target.value as Currency)}
-          className={styles.rateSelect}
+          className={inputClass}
         >
           {CURRENCIES.map((code) => (
             <option key={code} value={code}>
@@ -96,7 +97,7 @@ export default function ExchangeRateWidget() {
             </option>
           ))}
         </select>
-        <div className={styles.rateResult}>
+        <div className="border border-border rounded-sm bg-background text-foreground py-2 px-2.5 flex items-center">
           {converted === null ? 'Enter amount' : `≈ ₩${converted.toLocaleString('en-US', { maximumFractionDigits: 0 })}`}
         </div>
       </div>

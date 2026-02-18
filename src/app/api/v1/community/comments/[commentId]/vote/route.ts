@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { ensureCommunityAuthUser } from '@/lib/community-auth-user';
+import { assertWritesAllowed, EmergencyLockError } from '@/lib/emergency-lock';
 
 type RouteContext = { params: Promise<{ commentId: string }> };
 
@@ -35,6 +36,7 @@ export async function POST(request: Request, context: RouteContext) {
   }
 
   try {
+    await assertWritesAllowed();
     const userId = await ensureCommunityAuthUser(session);
 
     // Upsert: insert or update existing vote
@@ -55,6 +57,9 @@ export async function POST(request: Request, context: RouteContext) {
 
     return NextResponse.json({ score, userVote: vote });
   } catch (err) {
+    if (err instanceof EmergencyLockError) {
+      return NextResponse.json({ error: err.message }, { status: 503 });
+    }
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -73,6 +78,7 @@ export async function DELETE(_request: Request, context: RouteContext) {
   }
 
   try {
+    await assertWritesAllowed();
     const userId = await ensureCommunityAuthUser(session);
 
     await supabaseAdmin
@@ -86,6 +92,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
 
     return NextResponse.json({ score, userVote: 0 });
   } catch (err) {
+    if (err instanceof EmergencyLockError) {
+      return NextResponse.json({ error: err.message }, { status: 503 });
+    }
     const message = err instanceof Error ? err.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

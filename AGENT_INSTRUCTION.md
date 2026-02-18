@@ -21,9 +21,11 @@ Note: These personas cannot be invoked via `subagent_type` in the Task tool — 
 
 ## Coding Conventions
 
-- **Framework**: Next.js 15 App Router, TypeScript strict mode
-- **Styling**: CSS Modules + CSS custom properties. **No Tailwind. No Bootstrap. No styled-components.**
-- **Components**: `PascalCase.tsx` in `src/components/`
+- **Framework**: Next.js 16 App Router, TypeScript strict mode
+- **Styling**: Tailwind CSS v4 + shadcn/ui. CSS Modules migration is complete — do not reintroduce `.module.css` files.
+- **UI primitives**: Use shadcn/ui components from `@/components/ui/` (Button, Input, Badge, Tabs, Dialog, etc.)
+- **Utility function**: Use `cn()` from `@/lib/utils` for conditional class merging
+- **Components**: `PascalCase.tsx` in `src/components/`, shadcn primitives in `src/components/ui/`
 - **Routes/pages**: kebab-case directories in `src/app/`
 - **Data**: TypeScript interfaces in `src/types/index.ts`, data files in `src/data/`
 - **API routes**: RESTful, `/api/v1/...`
@@ -35,8 +37,8 @@ Note: These personas cannot be invoked via `subagent_type` in the Task tool — 
 
 ## Architecture Rules
 
-1. **Dark mode** via `[data-theme='dark']` on `<html>` — never toggle via JS class switches
-2. **ThemeProvider** owns theme state — access via `useTheme()` hook
+1. **Dark mode** via `.dark` class on `<html>` (Tailwind v4 only)
+2. **ThemeProvider** owns theme state — access via `useTheme()` hook. It toggles `.dark` class only.
 3. **Navigation** renders the leaderboard ad slot globally — never add another leaderboard per-page
 4. **Static data files** are MVP placeholders — when DB is added, keep the same TypeScript interfaces
 5. **WikiArticle** component handles all article rendering — don't duplicate article layout logic in pages
@@ -45,13 +47,18 @@ Note: These personas cannot be invoked via `subagent_type` in the Task tool — 
 
 ---
 
-## CSS / Design Rules (CDO)
+## CSS / Design Rules
 
-- All design tokens are in `src/app/globals.css`
-- Color: `--color-accent: #c0392b` (Korean red) — do not introduce other accent colors
+- Design tokens in `src/app/globals.css` using CSS custom properties mapped to shadcn/Tailwind
+- **Brand color (--primary)**: Light `#854D27` (warm brown), Dark `#5B82C4` (steel blue)
+- shadcn `--accent` = subtle highlight background, NOT our brand color. Use `--primary` for links, buttons, active states.
+- `--primary-subtle` = brand color at 5-10% opacity for backgrounds
 - Dark mode is the **default** theme
-- Layout: desktop-first, responsive breakpoints at 1024px and 768px
+- Layout: desktop-first, responsive breakpoints at `lg` (1024px) and `md` (768px)
 - Ad slots: leaderboard (728×90) below nav, rectangle (300×250) in sidebar/content
+- Border radius: minimal (`--radius: 0.25rem`) — wiki aesthetic, almost square
+- Shadows: almost none. Use `border` for separation, not `shadow`.
+- Full design system reference: `UI_GUIDE.md`
 
 ---
 
@@ -72,7 +79,7 @@ export PATH="/opt/homebrew/bin:$PATH"
 npm run build
 ```
 
-Expected output: 26 static pages, 0 TypeScript errors.
+Expected output: 54 pages, 0 TypeScript errors.
 
 ---
 

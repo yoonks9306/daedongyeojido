@@ -26,14 +26,19 @@ export function ThemeProvider({ children }: { children: ReactNode }) {
     const preferred = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
     const initial = saved ?? preferred;
     setTheme(initial);
-    document.documentElement.setAttribute('data-theme', initial);
+    applyTheme(initial);
   }, []);
+
+  function applyTheme(t: Theme) {
+    const root = document.documentElement;
+    root.classList.toggle('dark', t === 'dark');
+  }
 
   function toggleTheme() {
     setTheme(prev => {
       const next = prev === 'light' ? 'dark' : 'light';
       localStorage.setItem('korwiki-theme', next);
-      document.documentElement.setAttribute('data-theme', next);
+      applyTheme(next);
       return next;
     });
   }

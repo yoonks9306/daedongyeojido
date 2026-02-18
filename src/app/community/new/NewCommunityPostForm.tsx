@@ -1,8 +1,7 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import styles from './new.module.css';
 
 type Category = 'review' | 'question' | 'free' | 'tip';
 
@@ -23,7 +22,7 @@ export default function NewCommunityPostForm() {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(e: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     setError(null);
     setSubmitting(true);
@@ -59,15 +58,17 @@ export default function NewCommunityPostForm() {
     }
   }
 
-  return (
-    <div className={styles.page}>
-      <h1 className={styles.title}>Write a Community Post</h1>
+  const inputClass = 'w-full border border-border rounded-sm bg-background text-foreground font-sans py-2.5 px-3';
 
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <label className={styles.label} htmlFor="category">Category</label>
+  return (
+    <div className="max-w-[880px] mx-auto p-6">
+      <h1 className="text-3xl mb-5">Write a Community Post</h1>
+
+      <form className="grid gap-3 border border-border bg-card dark:bg-surface rounded-sm p-5" onSubmit={handleSubmit}>
+        <label className="text-sm text-muted-foreground" htmlFor="category">Category</label>
         <select
           id="category"
-          className={styles.select}
+          className={inputClass}
           value={category}
           onChange={(e) => setCategory(e.target.value as Category)}
           disabled={submitting}
@@ -79,10 +80,10 @@ export default function NewCommunityPostForm() {
           ))}
         </select>
 
-        <label className={styles.label} htmlFor="title">Title</label>
+        <label className="text-sm text-muted-foreground" htmlFor="title">Title</label>
         <input
           id="title"
-          className={styles.input}
+          className={inputClass}
           type="text"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -91,10 +92,10 @@ export default function NewCommunityPostForm() {
           disabled={submitting}
         />
 
-        <label className={styles.label} htmlFor="content">Content</label>
+        <label className="text-sm text-muted-foreground" htmlFor="content">Content</label>
         <textarea
           id="content"
-          className={styles.textarea}
+          className={`${inputClass} min-h-[220px] resize-y`}
           value={content}
           onChange={(e) => setContent(e.target.value)}
           maxLength={4000}
@@ -102,7 +103,7 @@ export default function NewCommunityPostForm() {
           disabled={submitting}
         />
 
-        <label className={styles.checkboxLabel}>
+        <label className="flex items-center gap-2 text-sm text-muted-foreground cursor-pointer">
           <input
             type="checkbox"
             checked={anonymous}
@@ -112,10 +113,10 @@ export default function NewCommunityPostForm() {
           Post anonymously
         </label>
 
-        <label className={styles.label} htmlFor="tags">Tags (comma-separated)</label>
+        <label className="text-sm text-muted-foreground" htmlFor="tags">Tags (comma-separated)</label>
         <input
           id="tags"
-          className={styles.input}
+          className={inputClass}
           type="text"
           value={tagsText}
           onChange={(e) => setTagsText(e.target.value)}
@@ -123,13 +124,13 @@ export default function NewCommunityPostForm() {
           disabled={submitting}
         />
 
-        {error && <p className={styles.error}>{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
 
-        <div className={styles.actions}>
-          <button type="button" className={styles.cancelBtn} onClick={() => router.push('/community')} disabled={submitting}>
+        <div className="flex justify-end gap-2 mt-2">
+          <button type="button" className="border border-border rounded-sm py-2.5 px-3.5 font-sans cursor-pointer bg-background text-muted-foreground" onClick={() => router.push('/community')} disabled={submitting}>
             Cancel
           </button>
-          <button type="submit" className={styles.submitBtn} disabled={submitting}>
+          <button type="submit" className="border border-primary rounded-sm py-2.5 px-3.5 font-sans cursor-pointer bg-primary text-primary-foreground" disabled={submitting}>
             {submitting ? 'Posting...' : 'Post'}
           </button>
         </div>

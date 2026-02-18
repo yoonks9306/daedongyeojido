@@ -4,8 +4,18 @@ import { useState, useEffect, Suspense } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import type { WikiArticle } from '@/types';
+import { cn } from '@/lib/utils';
 
 const CATEGORIES = ['All', 'Transport', 'Apps', 'Food', 'Culture', 'Places', 'Practical'] as const;
+
+const CATEGORY_BADGE: Record<string, string> = {
+  Transport: 'bg-badge-transport',
+  Apps: 'bg-badge-apps',
+  Food: 'bg-badge-food',
+  Culture: 'bg-badge-culture',
+  Places: 'bg-badge-places',
+  Practical: 'bg-badge-practical',
+};
 
 function WikiIndex({ articles }: { articles: WikiArticle[] }) {
   const searchParams = useSearchParams();
@@ -33,67 +43,41 @@ function WikiIndex({ articles }: { articles: WikiArticle[] }) {
   }, {});
 
   return (
-    <div style={{ maxWidth: 'var(--content-max-width)', margin: '0 auto', padding: '24px var(--spacing-6)' }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '12px', marginBottom: '8px', flexWrap: 'wrap' }}>
-        <h1 style={{ marginBottom: 0 }}>Wiki</h1>
+    <div className="max-w-[1200px] mx-auto px-6 py-6">
+      <div className="flex justify-between items-center gap-3 mb-2 flex-wrap">
+        <h1 className="mb-0">Wiki</h1>
         <Link
           href="/wiki/new"
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            padding: '8px 12px',
-            borderRadius: 'var(--border-radius-md)',
-            background: 'var(--color-accent)',
-            color: '#fff',
-            textDecoration: 'none',
-            fontSize: 'var(--font-size-sm)',
-            fontWeight: 500,
-          }}
+          className="inline-flex items-center justify-center py-2 px-3 rounded-sm bg-primary text-primary-foreground no-underline text-sm font-medium"
         >
           Write Article
         </Link>
       </div>
-      <p style={{ color: 'var(--color-text-secondary)', marginBottom: '24px', fontSize: 'var(--font-size-md)' }}>
+      <p className="text-muted-foreground mb-6 text-lg">
         Detailed articles on everything Korea — transport, apps, culture, food, and places.
       </p>
 
-      <div style={{ marginBottom: '24px' }}>
+      <div className="mb-6">
         <input
           type="search"
           value={search}
           onChange={e => setSearch(e.target.value)}
           placeholder="Search wiki articles..."
-          style={{
-            width: '100%', maxWidth: '500px',
-            padding: '10px 16px',
-            border: '1px solid var(--color-border-primary)',
-            borderRadius: 'var(--border-radius-md)',
-            background: 'var(--color-bg-secondary)',
-            color: 'var(--color-text-primary)',
-            fontSize: 'var(--font-size-base)',
-            fontFamily: 'var(--font-sans)',
-          }}
+          className="w-full max-w-[500px] py-2.5 px-4 border border-border rounded-sm bg-card dark:bg-surface text-foreground text-base font-sans"
         />
       </div>
 
-      <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '32px' }}>
+      <div className="flex gap-2 flex-wrap mb-8">
         {CATEGORIES.map(cat => (
           <button
             key={cat}
             onClick={() => setActiveCategory(cat)}
-            style={{
-              padding: '6px 16px',
-              borderRadius: 'var(--border-radius-pill)',
-              border: '1px solid var(--color-border-primary)',
-              background: activeCategory === cat ? 'var(--color-accent)' : 'var(--color-bg-secondary)',
-              color: activeCategory === cat ? '#fff' : 'var(--color-text-secondary)',
-              fontWeight: activeCategory === cat ? '600' : '400',
-              cursor: 'pointer',
-              fontSize: 'var(--font-size-sm)',
-              fontFamily: 'var(--font-sans)',
-              transition: 'all 120ms ease',
-            }}
+            className={cn(
+              'py-1.5 px-4 rounded-full border border-border cursor-pointer text-sm font-sans transition-all',
+              activeCategory === cat
+                ? 'bg-primary text-primary-foreground font-semibold border-primary'
+                : 'bg-card dark:bg-surface text-muted-foreground'
+            )}
           >
             {cat}
           </button>
@@ -103,14 +87,12 @@ function WikiIndex({ articles }: { articles: WikiArticle[] }) {
       {activeCategory === 'All' ? (
         Object.entries(grouped).map(([cat, catArticles]) =>
           catArticles.length === 0 ? null : (
-            <section key={cat} style={{ marginBottom: '40px' }}>
-              <h2 style={{
-                fontSize: 'var(--font-size-lg)', marginBottom: '16px',
-                display: 'flex', alignItems: 'center', gap: '8px',
-                borderBottom: 'none', paddingBottom: 0,
-              }}>
-                <span className={`badge badge-${cat.toLowerCase()}`}>{cat}</span>
-                <span style={{ color: 'var(--color-text-muted)', fontWeight: 400, fontSize: 'var(--font-size-sm)' }}>
+            <section key={cat} className="mb-10">
+              <h2 className="text-lg mb-4 flex items-center gap-2 border-none pb-0">
+                <span className={cn('inline-block py-0.5 px-2.5 rounded-full text-xs font-semibold uppercase tracking-wide text-white', CATEGORY_BADGE[cat])}>
+                  {cat}
+                </span>
+                <span className="text-muted-foreground font-normal text-sm">
                   {catArticles.length} article{catArticles.length !== 1 ? 's' : ''}
                 </span>
               </h2>
@@ -123,7 +105,7 @@ function WikiIndex({ articles }: { articles: WikiArticle[] }) {
       )}
 
       {filtered.length === 0 && (
-        <p style={{ color: 'var(--color-text-muted)', textAlign: 'center', padding: '48px' }}>
+        <p className="text-muted-foreground text-center py-12">
           No articles found for &quot;{search}&quot;.
         </p>
       )}
@@ -133,20 +115,14 @@ function WikiIndex({ articles }: { articles: WikiArticle[] }) {
 
 function ArticleGrid({ articles }: { articles: WikiArticle[] }) {
   return (
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '12px' }}>
+    <div className="grid grid-cols-[repeat(auto-fill,minmax(280px,1fr))] gap-3">
       {articles.map(article => (
-        <Link key={article.slug} href={`/wiki/${article.slug}`} style={{ textDecoration: 'none' }}>
-          <div style={{
-            padding: '16px',
-            border: '1px solid var(--color-border-subtle)',
-            borderRadius: 'var(--border-radius-md)',
-            background: 'var(--color-bg-primary)',
-            height: '100%',
-          }}>
-            <h3 style={{ fontSize: 'var(--font-size-base)', fontWeight: 600, marginBottom: '6px', color: 'var(--color-text-link)', marginTop: 0, border: 'none' }}>
+        <Link key={article.slug} href={`/wiki/${article.slug}`} className="no-underline">
+          <div className="p-4 border border-border/50 rounded-sm bg-background h-full hover:border-border transition-colors">
+            <h3 className="text-base font-semibold mb-1.5 text-primary mt-0 border-none">
               {article.title}
             </h3>
-            <p style={{ fontSize: 'var(--font-size-sm)', color: 'var(--color-text-secondary)', lineHeight: 1.5, margin: 0 }}>
+            <p className="text-sm text-muted-foreground leading-normal m-0">
               {article.summary.slice(0, 100)}…
             </p>
           </div>
@@ -158,7 +134,7 @@ function ArticleGrid({ articles }: { articles: WikiArticle[] }) {
 
 export default function WikiIndexClient({ articles }: { articles: WikiArticle[] }) {
   return (
-    <Suspense fallback={<div style={{ padding: '48px', textAlign: 'center' }}>Loading…</div>}>
+    <Suspense fallback={<div className="p-12 text-center">Loading…</div>}>
       <WikiIndex articles={articles} />
     </Suspense>
   );

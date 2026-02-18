@@ -1,7 +1,11 @@
 import { NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { auth } from '@/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { ensureCommunityAuthUser } from '@/lib/community-auth-user';
+import { ensureUserProfile } from '@/lib/user-profiles';
+import { assertWritesAllowed, EmergencyLockError } from '@/lib/emergency-lock';
+import { assertWriteRateLimit, WriteRateLimitError } from '@/lib/write-rate-limit';
 import { isValidWikiCategory, slugifyWikiTitle } from '@/lib/wiki-utils';
 
 type CreateWikiBody = {
@@ -56,9 +60,22 @@ export async function POST(request: Request) {
   }
 
   try {
+    await assertWritesAllowed();
     const authorId = await ensureCommunityAuthUser(session);
+    await assertWriteRateLimit({
+      table: 'wiki_revisions',
+      actorColumn: 'author_id',
+      actorId: authorId,
+      windowSec: 600,
+      max: 10,
+    });
+    await ensureUserProfile({
+      userId: authorId,
+      preferredUsername: session.user?.email?.split('@')[0] ?? session.user?.name ?? null,
+      displayName: session.user?.name ?? null,
+    });
 
-    const { data, error } = await supabaseAdmin
+    const { data: article, error } = await supabaseAdmin
       .from('wiki_articles')
       .insert({
         slug,
@@ -72,7 +89,7 @@ export async function POST(request: Request) {
         last_updated: new Date().toISOString().slice(0, 10),
         author_id: authorId,
       })
-      .select('slug')
+      .select('id, slug')
       .single();
 
     if (error) {
@@ -82,8 +99,35 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    return NextResponse.json({ slug: data.slug }, { status: 201 });
+    const revisionInsert = await supabaseAdmin
+      .from('wiki_revisions')
+      .insert({
+        article_id: article.id,
+        revision_number: 1,
+        content,
+        content_hash: createHash('sha256').update(content).digest('hex'),
+        summary: 'Initial revision',
+        author_id: authorId,
+        author_name: session.user?.name ?? session.user?.email ?? authorId,
+        status: 'active',
+      });
+
+    if (revisionInsert.error) {
+      return NextResponse.json({ error: revisionInsert.error.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      slug: article.slug,
+      revisionNumber: 1,
+      status: 'active',
+    }, { status: 201 });
   } catch (error) {
+    if (error instanceof EmergencyLockError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+    if (error instanceof WriteRateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import Script from 'next/script';
+import { Analytics } from '@vercel/analytics/react';
 import { ThemeProvider } from '@/components/ThemeProvider';
 import AuthProvider from '@/components/AuthProvider';
 import Navigation from '@/components/Navigation';
@@ -60,25 +61,18 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <AuthProvider>
         <ThemeProvider>
           <Navigation />
-          <div className="main-content">
+          <div className="pt-[calc(var(--nav-height)+var(--ad-banner-height))] min-h-screen">
             {children}
           </div>
-          <footer style={{
-            borderTop: '1px solid var(--color-border-primary)',
-            padding: '24px',
-            textAlign: 'center',
-            fontSize: 'var(--font-size-sm)',
-            color: 'var(--color-text-muted)',
-            marginTop: '48px',
-            backgroundColor: 'var(--color-bg-secondary)',
-          }}>
+          <footer className="border-t border-border p-6 text-center text-sm text-muted-foreground mt-12 bg-card dark:bg-background">
             <p>© 2026 KorWiki — English Travel Guide for Korea</p>
-            <p style={{ marginTop: '4px' }}>
+            <p className="mt-1">
               Not affiliated with any Korean government agency. Information provided for travelers.
             </p>
           </footer>
         </ThemeProvider>
         </AuthProvider>
+        <Analytics />
       </body>
     </html>
   );

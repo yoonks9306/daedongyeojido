@@ -1,9 +1,8 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { WIKI_CATEGORIES } from '@/lib/wiki-utils';
-import styles from './wiki-editor.module.css';
 
 type EditorInitial = {
   title: string;
@@ -12,6 +11,7 @@ type EditorInitial = {
   content: string;
   tagsText: string;
   relatedArticlesText: string;
+  baseRevisionNumber: number;
 };
 
 interface WikiEditorFormProps {
@@ -28,10 +28,11 @@ export default function WikiEditorForm({ mode, slug, initial }: WikiEditorFormPr
   const [content, setContent] = useState(initial.content);
   const [tagsText, setTagsText] = useState(initial.tagsText);
   const [relatedArticlesText, setRelatedArticlesText] = useState(initial.relatedArticlesText);
+  const [baseRevisionNumber, setBaseRevisionNumber] = useState(initial.baseRevisionNumber);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     setSaving(true);
     setError(null);
@@ -52,12 +53,32 @@ export default function WikiEditorForm({ mode, slug, initial }: WikiEditorFormPr
           content,
           tags,
           relatedArticles,
+          ...(mode === 'edit' ? { baseRevisionNumber } : {}),
         }),
       });
 
-      const payload = (await response.json()) as { slug?: string; error?: string };
+      const payload = (await response.json()) as {
+        slug?: string;
+        error?: string;
+        revisionNumber?: number;
+        currentRevisionNumber?: number;
+      };
       if (!response.ok || !payload.slug) {
+        if (response.status === 409) {
+          const latest = typeof payload.currentRevisionNumber === 'number'
+            ? payload.currentRevisionNumber
+            : null;
+          throw new Error(
+            latest === null
+              ? 'Another user updated this article. Reload and merge your changes.'
+              : `Another user updated this article (latest revision: #${latest}). Reload and merge your changes.`
+          );
+        }
         throw new Error(payload.error ?? 'Failed to save wiki article.');
+      }
+
+      if (typeof payload.revisionNumber === 'number') {
+        setBaseRevisionNumber(payload.revisionNumber);
       }
 
       router.push(`/wiki/${payload.slug}`);
@@ -68,14 +89,16 @@ export default function WikiEditorForm({ mode, slug, initial }: WikiEditorFormPr
     }
   }
 
+  const inputClass = 'border border-border rounded-sm bg-background text-foreground font-sans py-2.5 px-3';
+
   return (
-    <div className={styles.page}>
-      <h1 className={styles.title}>{mode === 'create' ? 'Write Wiki Article' : 'Edit Wiki Article'}</h1>
-      <form className={styles.form} onSubmit={handleSubmit}>
-        <label className={styles.label} htmlFor="title">Title</label>
+    <div className="max-w-[960px] mx-auto p-6">
+      <h1 className="text-3xl mb-5">{mode === 'create' ? 'Write Wiki Article' : 'Edit Wiki Article'}</h1>
+      <form className="grid gap-3 border border-border rounded-sm bg-card dark:bg-surface p-5" onSubmit={handleSubmit}>
+        <label className="text-sm text-muted-foreground" htmlFor="title">Title</label>
         <input
           id="title"
-          className={styles.input}
+          className={inputClass}
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           maxLength={120}
@@ -83,10 +106,10 @@ export default function WikiEditorForm({ mode, slug, initial }: WikiEditorFormPr
           disabled={saving}
         />
 
-        <label className={styles.label} htmlFor="category">Category</label>
+        <label className="text-sm text-muted-foreground" htmlFor="category">Category</label>
         <select
           id="category"
-          className={styles.input}
+          className={inputClass}
           value={category}
           onChange={(event) => setCategory(event.target.value as (typeof WIKI_CATEGORIES)[number])}
           disabled={saving}
@@ -96,10 +119,10 @@ export default function WikiEditorForm({ mode, slug, initial }: WikiEditorFormPr
           ))}
         </select>
 
-        <label className={styles.label} htmlFor="summary">Summary</label>
+        <label className="text-sm text-muted-foreground" htmlFor="summary">Summary</label>
         <textarea
           id="summary"
-          className={styles.textareaSmall}
+          className={`${inputClass} min-h-24 resize-y`}
           value={summary}
           onChange={(event) => setSummary(event.target.value)}
           maxLength={300}
@@ -107,10 +130,10 @@ export default function WikiEditorForm({ mode, slug, initial }: WikiEditorFormPr
           disabled={saving}
         />
 
-        <label className={styles.label} htmlFor="content">Content (HTML allowed)</label>
+        <label className="text-sm text-muted-foreground" htmlFor="content">Content (HTML allowed)</label>
         <textarea
           id="content"
-          className={styles.textareaLarge}
+          className={`${inputClass} min-h-[360px] resize-y`}
           value={content}
           onChange={(event) => setContent(event.target.value)}
           maxLength={40000}
@@ -118,31 +141,31 @@ export default function WikiEditorForm({ mode, slug, initial }: WikiEditorFormPr
           disabled={saving}
         />
 
-        <label className={styles.label} htmlFor="tags">Tags (comma-separated)</label>
+        <label className="text-sm text-muted-foreground" htmlFor="tags">Tags (comma-separated)</label>
         <input
           id="tags"
-          className={styles.input}
+          className={inputClass}
           value={tagsText}
           onChange={(event) => setTagsText(event.target.value)}
           disabled={saving}
         />
 
-        <label className={styles.label} htmlFor="related">Related article slugs (comma-separated)</label>
+        <label className="text-sm text-muted-foreground" htmlFor="related">Related article slugs (comma-separated)</label>
         <input
           id="related"
-          className={styles.input}
+          className={inputClass}
           value={relatedArticlesText}
           onChange={(event) => setRelatedArticlesText(event.target.value)}
           disabled={saving}
         />
 
-        {error && <p className={styles.error}>{error}</p>}
+        {error && <p className="text-destructive text-sm">{error}</p>}
 
-        <div className={styles.actions}>
-          <button type="button" className={styles.cancelBtn} onClick={() => router.back()} disabled={saving}>
+        <div className="flex justify-end gap-2 mt-2">
+          <button type="button" className="border border-border rounded-sm py-2.5 px-3.5 font-sans cursor-pointer bg-background text-muted-foreground" onClick={() => router.back()} disabled={saving}>
             Cancel
           </button>
-          <button type="submit" className={styles.submitBtn} disabled={saving}>
+          <button type="submit" className="border border-primary rounded-sm py-2.5 px-3.5 font-sans cursor-pointer bg-primary text-primary-foreground" disabled={saving}>
             {saving ? 'Saving...' : mode === 'create' ? 'Create' : 'Save'}
           </button>
         </div>

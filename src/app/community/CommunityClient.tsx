@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { useMemo, useState } from 'react';
 import type { CommunityPost } from '@/types';
-import styles from './community.module.css';
+import { cn } from '@/lib/utils';
 
 type Tab = 'all' | 'daily' | 'weekly' | 'monthly';
 
@@ -23,6 +23,13 @@ const CAT_LABELS: Record<string, string> = {
   question: 'Question',
   free:     'Free Talk',
   tip:      'Tip',
+};
+
+const CAT_STYLES: Record<string, string> = {
+  review: 'bg-[#e8f5e9] text-[#2e7d32] dark:bg-[#1b3a1e] dark:text-[#66bb6a]',
+  question: 'bg-[#e3f2fd] text-[#1565c0] dark:bg-[#1a2a3a] dark:text-[#64b5f6]',
+  free: 'bg-[#fce4ec] text-[#880e4f] dark:bg-[#3a1a2a] dark:text-[#f48fb1]',
+  tip: 'bg-[#fff8e1] text-[#f57f17] dark:bg-[#3a3010] dark:text-[#ffd54f]',
 };
 
 const RECENCY_MS: Record<Tab, number> = {
@@ -50,7 +57,6 @@ function getPostsForTab(posts: CommunityPost[], tab: Tab): CommunityPost[] {
     .slice(0, tab === 'daily' ? 5 : tab === 'weekly' ? 10 : pool.length);
 }
 
-/* SVG icons */
 function CommentIcon() {
   return (
     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -140,26 +146,30 @@ export default function CommunityClient({ posts }: { posts: CommunityPost[] }) {
   }
 
   return (
-    <div className={styles.communityPage}>
-      <div className={styles.titleRow}>
-        <h1 className={styles.pageTitle}>
+    <div className="max-w-[1200px] mx-auto px-6 pt-6 max-md:px-4">
+      <div className="flex justify-between items-center gap-3 mb-2 max-md:items-start">
+        <h1 className="text-3xl font-bold flex items-baseline gap-3 flex-wrap">
           Community
-          <span style={{ fontSize: 'var(--font-size-base)', fontWeight: 400, color: 'var(--color-text-muted)' }}>
+          <span className="text-base font-normal text-muted-foreground">
             — Reviews, Questions &amp; Free Talk
           </span>
         </h1>
-        <Link href="/community/new" className={styles.writeBtn}>Write Post</Link>
+        <Link href="/community/new" className="inline-flex items-center justify-center py-2 px-3 border border-primary rounded-sm bg-primary text-primary-foreground no-underline text-sm font-medium">Write Post</Link>
       </div>
 
-      {voteError && <p className={styles.voteError}>{voteError}</p>}
+      {voteError && <p className="text-destructive text-sm mb-3">{voteError}</p>}
 
-      <div className={styles.bestTabs} role="tablist">
+      <div className="flex border-b-2 border-border mb-6" role="tablist">
         {TABS.map(tab => (
           <button
             key={tab.key}
             role="tab"
             aria-selected={activeTab === tab.key}
-            className={`${styles.bestTab} ${activeTab === tab.key ? styles.bestTabActive : ''}`}
+            className={cn(
+              'py-2 px-5 text-sm font-medium text-muted-foreground cursor-pointer bg-transparent border-none border-b-[3px] border-transparent -mb-[2px] transition-colors font-sans',
+              activeTab === tab.key && 'text-primary border-b-primary font-semibold',
+              activeTab !== tab.key && 'hover:text-foreground'
+            )}
             onClick={() => setActiveTab(tab.key)}
           >
             {tab.label}
@@ -167,41 +177,44 @@ export default function CommunityClient({ posts }: { posts: CommunityPost[] }) {
         ))}
       </div>
 
-      <ul className={styles.postList} role="list">
+      <ul className="list-none p-0 m-0 border border-border rounded-sm overflow-hidden" role="list">
         {displayPosts.map(post => (
           <li
             key={post.id}
-            className={styles.postItem}
+            className="grid grid-cols-[48px_1fr] gap-4 items-center py-3 px-4 border-b border-border/50 last:border-b-0 transition-colors hover:bg-card dark:hover:bg-surface cursor-pointer max-md:grid-cols-[40px_1fr]"
             onClick={() => router.push(`/community/${post.id}`)}
-            style={{ cursor: 'pointer' }}
           >
-            <div className={styles.voteCol} onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-col items-center gap-1" onClick={(e) => e.stopPropagation()}>
               <button
-                className={`${styles.voteBtn} ${votedPosts[post.id] ? styles.voteBtnActive : ''}`}
+                className={cn(
+                  'w-8 h-7 flex items-center justify-center border border-border rounded-sm bg-card dark:bg-surface text-muted-foreground cursor-pointer text-sm leading-none transition-colors',
+                  votedPosts[post.id] && 'bg-primary/15 text-primary border-primary',
+                  !votedPosts[post.id] && 'hover:bg-primary/15 hover:text-primary hover:border-primary'
+                )}
                 aria-label={votedPosts[post.id] ? 'Remove upvote' : 'Upvote'}
                 onClick={() => { void handleVote(post.id); }}
                 disabled={Boolean(loadingVote[post.id])}
               >
                 ▲
               </button>
-              <span className={styles.voteCount}>{post.upvotes}</span>
+              <span className="text-sm font-semibold text-foreground min-w-5 text-center">{post.upvotes}</span>
             </div>
 
-            <div className={styles.postContent}>
-              <span className={styles.postTitle}>
+            <div className="min-w-0">
+              <span className="inline-block text-base font-medium text-foreground mb-1 whitespace-nowrap overflow-hidden text-ellipsis cursor-pointer no-underline hover:text-primary">
                 {post.title}
               </span>
-              <div className={styles.postMeta}>
-                <span className={`${styles.catBadge} ${styles[`cat${post.category.charAt(0).toUpperCase() + post.category.slice(1)}` as keyof typeof styles]}`}>
+              <div className="flex gap-3 items-center text-xs text-muted-foreground flex-wrap">
+                <span className={cn('inline-block py-[0.1em] px-2 rounded-full text-[0.65rem] font-semibold uppercase tracking-wide', CAT_STYLES[post.category])}>
                   {CAT_LABELS[post.category]}
                 </span>
                 <span>{post.author}</span>
                 <span>{new Date(post.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}</span>
-                <span className={styles.metaIcon}><CommentIcon /> {post.comments}</span>
-                <span className={styles.metaIcon}><ViewIcon /> {post.views.toLocaleString()}</span>
+                <span className="inline-flex items-center gap-[3px] [&_svg]:opacity-60"><CommentIcon /> {post.comments}</span>
+                <span className="inline-flex items-center gap-[3px] [&_svg]:opacity-60"><ViewIcon /> {post.views.toLocaleString()}</span>
                 {isAdmin && (
                   <button
-                    className={styles.deleteBtn}
+                    className="inline-flex items-center bg-transparent border-none cursor-pointer text-muted-foreground p-0.5 rounded-sm transition-colors hover:text-destructive"
                     onClick={(e) => { e.stopPropagation(); void handleDelete(post.id); }}
                     aria-label="Delete post"
                     title="Delete post (admin)"

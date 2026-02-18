@@ -1,5 +1,6 @@
 import type { Session } from 'next-auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { assertProfileWritable } from '@/lib/user-profiles';
 
 type IdentityRow = {
   nextauth_subject: string;
@@ -52,6 +53,14 @@ export async function ensureCommunityAuthUser(session: Session): Promise<string>
   }
 
   if (existingIdentity?.supabase_user_id) {
+    const { data: profile } = await supabaseAdmin
+      .from('user_profiles')
+      .select('deleted_at, banned_until')
+      .eq('user_id', existingIdentity.supabase_user_id)
+      .maybeSingle<{ deleted_at: string | null; banned_until: string | null }>();
+    if (profile) {
+      assertProfileWritable(profile);
+    }
     return existingIdentity.supabase_user_id;
   }
 
@@ -88,6 +97,16 @@ export async function ensureCommunityAuthUser(session: Session): Promise<string>
 
   if (upsertError) {
     throw new Error(`Failed to persist user identity: ${upsertError.message}`);
+  }
+
+  const { data: profile } = await supabaseAdmin
+    .from('user_profiles')
+    .select('deleted_at, banned_until')
+    .eq('user_id', supabaseUserId)
+    .maybeSingle<{ deleted_at: string | null; banned_until: string | null }>();
+
+  if (profile) {
+    assertProfileWritable(profile);
   }
 
   return supabaseUserId;

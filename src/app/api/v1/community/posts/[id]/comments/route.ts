@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { ensureCommunityAuthUser } from '@/lib/community-auth-user';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { assertWritesAllowed, EmergencyLockError } from '@/lib/emergency-lock';
+import { assertWriteRateLimit, WriteRateLimitError } from '@/lib/write-rate-limit';
 
 type CommentsRouteContext = {
   params: Promise<{ id: string }>;
@@ -92,7 +94,15 @@ export async function POST(request: Request, context: CommentsRouteContext) {
   }
 
   try {
+    await assertWritesAllowed();
     const authorId = await ensureCommunityAuthUser(session);
+    await assertWriteRateLimit({
+      table: 'comments',
+      actorColumn: 'author_id',
+      actorId: authorId,
+      windowSec: 600,
+      max: 20,
+    });
     const isAnonymous = body.anonymous === true;
     const authorName = isAnonymous
       ? 'Anonymous'
@@ -129,6 +139,12 @@ export async function POST(request: Request, context: CommentsRouteContext) {
       { status: 201 }
     );
   } catch (error) {
+    if (error instanceof EmergencyLockError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+    if (error instanceof WriteRateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

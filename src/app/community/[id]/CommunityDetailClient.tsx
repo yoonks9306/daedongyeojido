@@ -5,13 +5,20 @@ import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { FormEvent, useState } from 'react';
 import type { CommunityComment, CommunityPost } from '@/types';
-import styles from './detail.module.css';
+import { cn } from '@/lib/utils';
 
 const CAT_LABELS: Record<CommunityPost['category'], string> = {
   review: 'Review',
   question: 'Question',
   free: 'Free Talk',
   tip: 'Tip',
+};
+
+const CAT_STYLES: Record<string, string> = {
+  review: 'bg-[#e8f5e9] text-[#2e7d32] dark:bg-[#1b3a1e] dark:text-[#66bb6a]',
+  question: 'bg-[#e3f2fd] text-[#1565c0] dark:bg-[#1a2a3a] dark:text-[#64b5f6]',
+  free: 'bg-[#fce4ec] text-[#880e4f] dark:bg-[#3a1a2a] dark:text-[#f48fb1]',
+  tip: 'bg-[#fff8e1] text-[#f57f17] dark:bg-[#3a3010] dark:text-[#ffd54f]',
 };
 
 function ChevronUp({ size = 16 }: { size?: number }) {
@@ -162,39 +169,45 @@ export default function CommunityDetailClient({
   }
 
   return (
-    <div className={styles.page}>
-      <div className={styles.backRow}>
-        <Link href="/community" className={styles.backLink}>← Back to Community</Link>
+    <div className="max-w-[980px] mx-auto p-6">
+      <div>
+        <Link href="/community" className="text-primary no-underline text-sm">← Back to Community</Link>
       </div>
 
-      <article className={styles.postCard}>
-        <header className={styles.header}>
-          <h1 className={styles.title}>{post.title}</h1>
-          <div className={styles.meta}>
-            <span className={`${styles.catBadge} ${styles[`cat${post.category.charAt(0).toUpperCase() + post.category.slice(1)}` as keyof typeof styles]}`}>
+      <article className="border border-border bg-card dark:bg-surface rounded-sm p-5 mb-6">
+        <header className="border-b border-border pb-3 mb-4">
+          <h1 className="m-0 mb-2 text-3xl">{post.title}</h1>
+          <div className="flex flex-wrap gap-3 text-muted-foreground text-xs">
+            <span className={cn('inline-flex items-center rounded-sm px-2 py-0.5 font-medium text-xs', CAT_STYLES[post.category])}>
               {CAT_LABELS[post.category]}
             </span>
             <span>{post.author}</span>
             <span>{new Date(post.createdAt).toLocaleString('en-US')}</span>
-            <span className={styles.metaIcon}><CommentIcon /> {post.comments}</span>
-            <span className={styles.metaIcon}><ViewIcon /> {post.views.toLocaleString()}</span>
+            <span className="inline-flex items-center gap-1"><CommentIcon /> {post.comments}</span>
+            <span className="inline-flex items-center gap-1"><ViewIcon /> {post.views.toLocaleString()}</span>
           </div>
         </header>
 
-        <div className={styles.content}>{post.content}</div>
+        <div className="whitespace-pre-wrap leading-relaxed">{post.content}</div>
 
-        <div className={styles.postVoteBar}>
+        <div className="flex items-center gap-2 mt-4 pt-3 border-t border-border/50">
           <button
-            className={`${styles.voteBtn} ${postVote === 1 ? styles.voteBtnUpActive : ''}`}
+            className={cn(
+              'inline-flex items-center justify-center bg-transparent border border-border rounded-sm cursor-pointer text-muted-foreground py-1 px-2 transition-colors hover:text-foreground hover:border-muted-foreground',
+              postVote === 1 && 'text-primary border-primary'
+            )}
             onClick={() => { void handlePostVote(1); }}
             disabled={postVoteLoading}
             aria-label="Upvote post"
           >
             <ChevronUp size={18} />
           </button>
-          <span className={styles.voteScore}>{post.upvotes}</span>
+          <span>{post.upvotes}</span>
           <button
-            className={`${styles.voteBtn} ${postVote === -1 ? styles.voteBtnDownActive : ''}`}
+            className={cn(
+              'inline-flex items-center justify-center bg-transparent border border-border rounded-sm cursor-pointer text-muted-foreground py-1 px-2 transition-colors hover:text-foreground hover:border-muted-foreground',
+              postVote === -1 && 'text-[#64b5f6] border-[#64b5f6]'
+            )}
             onClick={() => { void handlePostVote(-1); }}
             disabled={postVoteLoading}
             aria-label="Downvote post"
@@ -204,13 +217,13 @@ export default function CommunityDetailClient({
         </div>
       </article>
 
-      <section className={styles.commentsSection}>
-        <h2 className={styles.commentsTitle}>Comments ({comments.length})</h2>
+      <section className="border border-border bg-card dark:bg-surface rounded-sm p-5">
+        <h2 className="mt-0 mb-4 text-base font-semibold text-foreground">Comments ({comments.length})</h2>
 
         {session?.user ? (
-          <form className={styles.commentForm} onSubmit={handleSubmit}>
+          <form className="mb-4" onSubmit={handleSubmit}>
             <textarea
-              className={styles.textarea}
+              className="w-full min-h-[100px] border border-border rounded-sm bg-background text-foreground font-sans py-2.5 px-3 resize-y"
               value={content}
               onChange={(event) => setContent(event.target.value)}
               maxLength={2000}
@@ -218,8 +231,8 @@ export default function CommunityDetailClient({
               required
               disabled={submitting}
             />
-            <div className={styles.formFooter}>
-              <label className={styles.checkboxLabel}>
+            <div className="flex items-center justify-between mt-2">
+              <label className="inline-flex items-center gap-1.5 text-sm text-muted-foreground cursor-pointer">
                 <input
                   type="checkbox"
                   checked={anonymous}
@@ -227,56 +240,62 @@ export default function CommunityDetailClient({
                 />
                 Post anonymously
               </label>
-              <button type="submit" className={styles.submitBtn} disabled={submitting}>
+              <button type="submit" className="border border-primary bg-primary text-primary-foreground rounded-sm py-2.5 px-3.5 font-sans cursor-pointer" disabled={submitting}>
                 {submitting ? 'Posting...' : 'Post Comment'}
               </button>
             </div>
-            {error && <p className={styles.error}>{error}</p>}
+            {error && <p className="text-destructive text-sm mt-2">{error}</p>}
           </form>
         ) : (
-          <div className={styles.loginPrompt}>
+          <div className="flex items-center gap-2 mb-4 text-sm text-muted-foreground">
             <span>Login required to write a comment.</span>
-            <Link href={`/login?callbackUrl=/community/${post.id}`} className={styles.loginLink}>
+            <Link href={`/login?callbackUrl=/community/${post.id}`} className="text-primary no-underline">
               Sign in
             </Link>
           </div>
         )}
 
-        <ul className={styles.commentList}>
+        <ul className="list-none m-0 p-0">
           {comments.map((comment) => {
             const score = commentScores[comment.id] ?? comment.score;
             const userVote = commentVotes[comment.id] ?? 0;
             return (
-              <li key={comment.id} className={styles.commentItem}>
-                <div className={styles.commentVoteCol}>
+              <li key={comment.id} className="flex gap-3 border-t border-border/50 py-3">
+                <div className="flex flex-col items-center gap-1 min-w-[2rem]">
                   <button
-                    className={`${styles.commentVoteBtn} ${userVote === 1 ? styles.voteBtnUpActive : ''}`}
+                    className={cn(
+                      'inline-flex items-center justify-center bg-transparent border border-border rounded-sm cursor-pointer text-muted-foreground py-1 px-2 transition-colors hover:text-foreground hover:border-muted-foreground',
+                      userVote === 1 && 'text-primary border-primary'
+                    )}
                     onClick={() => { void handleCommentVote(comment.id, 1); }}
                     aria-label="Upvote comment"
                   >
                     <ChevronUp size={14} />
                   </button>
-                  <span className={styles.commentVoteScore}>{score}</span>
+                  <span className="text-xs text-muted-foreground">{score}</span>
                   <button
-                    className={`${styles.commentVoteBtn} ${userVote === -1 ? styles.voteBtnDownActive : ''}`}
+                    className={cn(
+                      'inline-flex items-center justify-center bg-transparent border border-border rounded-sm cursor-pointer text-muted-foreground py-1 px-2 transition-colors hover:text-foreground hover:border-muted-foreground',
+                      userVote === -1 && 'text-[#64b5f6] border-[#64b5f6]'
+                    )}
                     onClick={() => { void handleCommentVote(comment.id, -1); }}
                     aria-label="Downvote comment"
                   >
                     <ChevronDown size={14} />
                   </button>
                 </div>
-                <div className={styles.commentBody}>
-                  <div className={styles.commentMeta}>
-                    <strong>{comment.author}</strong>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 text-xs text-muted-foreground">
+                    <strong className="text-foreground">{comment.author}</strong>
                     <span>{new Date(comment.createdAt).toLocaleString('en-US')}</span>
                   </div>
-                  <p className={styles.commentContent}>{comment.content}</p>
+                  <p className="m-0 text-sm text-foreground whitespace-pre-wrap">{comment.content}</p>
                 </div>
               </li>
             );
           })}
           {comments.length === 0 && (
-            <li className={styles.empty}>No comments yet.</li>
+            <li className="py-6 text-center text-muted-foreground text-sm">No comments yet.</li>
           )}
         </ul>
       </section>

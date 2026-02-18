@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { ensureCommunityAuthUser } from '@/lib/community-auth-user';
+import { assertWritesAllowed, EmergencyLockError } from '@/lib/emergency-lock';
+import { assertWriteRateLimit, WriteRateLimitError } from '@/lib/write-rate-limit';
 
 const VALID_CATEGORIES = new Set(['review', 'question', 'free', 'tip']);
 
@@ -44,7 +46,15 @@ export async function POST(request: Request) {
   }
 
   try {
+    await assertWritesAllowed();
     const supabaseUserId = await ensureCommunityAuthUser(session);
+    await assertWriteRateLimit({
+      table: 'community_posts',
+      actorColumn: 'author_id',
+      actorId: supabaseUserId,
+      windowSec: 600,
+      max: 5,
+    });
     const isAnonymous = body.anonymous === true;
     const authorName = isAnonymous
       ? 'Anonymous'
@@ -72,6 +82,12 @@ export async function POST(request: Request) {
 
     return NextResponse.json({ id: data.id }, { status: 201 });
   } catch (error) {
+    if (error instanceof EmergencyLockError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
+    if (error instanceof WriteRateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

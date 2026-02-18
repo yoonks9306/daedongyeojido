@@ -299,3 +299,335 @@
 - Fixed scroll offset issues for sticky nav/ad banner to prevent content occlusion
 - Removed Sidebar TOC active section highlighting to reduce visual clutter (user request)
 - Verified consistency across Wiki and Guide pages and updated internal documentation
+- Removed Help Cursor on Strikethrough (User request)
+
+## 2026-02-18 — Claude (Opus) — UI Redesign Foundation (Phase 1+2)
+
+### Context
+- Owner decided on full UI redesign: CSS Modules → Tailwind v4 + shadcn/ui
+- Design direction from Stitch mockups (Wikipedia/NamuWiki knowledge archive aesthetic)
+- Light accent: `#854D27` (warm brown), Dark accent: `#5B82C4` (steel blue)
+- Font: Public Sans. Minimal border-radius (0.25rem). Almost no shadows.
+
+### Completed
+- Installed Tailwind CSS v4 + `@tailwindcss/postcss` + autoprefixer
+- Created `postcss.config.mjs`
+- Installed shadcn/ui (new-york style, neutral base)
+- Installed 16 shadcn primitives: Button, Input, Textarea, Select, Dialog, DropdownMenu, Tabs, Badge, Separator, Table, Tooltip, Sheet, Skeleton, Sonner, Avatar, Card
+- Created `src/lib/utils.ts` (`cn()` function for class merging)
+- Rewrote `src/app/globals.css`:
+  - Tailwind v4 `@import` + `@theme` + `@theme inline` (shadcn mapping)
+  - KorWiki brand `#854D27` mapped to shadcn `--primary` (not `--accent`)
+  - shadcn `--accent` = subtle highlight background
+  - Legacy CSS variable bridge preserved (all `--color-*` vars still work for existing CSS modules)
+  - `.wiki-content` typography for dangerouslySetInnerHTML articles
+  - `del` insider tip convention, scrollbar, focus, selection styles preserved
+- Updated `ThemeProvider.tsx`: toggles both `.dark` class (Tailwind) and `data-theme` attribute (legacy bridge)
+- Updated `AGENT_INSTRUCTION.md`: new styling rules, framework version, design token docs
+- Created `UI_GUIDE.md`: comprehensive design system reference (colors, typography, spacing, layout, component inventory, migration plan)
+- Build verified: 54 pages, 0 TypeScript errors, 3 consecutive successful builds
+
+### Key Design Decision
+- shadcn `--accent` vs KorWiki brand color conflict resolved:
+  - `--primary` = our brand color (links, buttons, active states)
+  - `--accent` = shadcn's subtle highlight (hover backgrounds)
+  - `--primary-subtle` = brand at 5% opacity (infobox headers, code backgrounds)
+
+### Next Steps (Phase 3+)
+1. **Navigation rebuild**: Replace `Navigation.module.css` (243 lines) with Tailwind classes
+2. **Footer rebuild**: Replace inline styles in `layout.tsx`
+3. **Layout rebuild**: New shell structure with Tailwind
+4. **Page-by-page rebuild**: Wiki → Community → Guide → Login
+5. **Cleanup**: Delete all `*.module.css` files, remove legacy variable bridge
+
+### Files Changed
+- `package.json` (new devDeps: tailwindcss, @tailwindcss/postcss, postcss, autoprefixer + shadcn deps)
+- `postcss.config.mjs` (new)
+- `components.json` (new, shadcn config)
+- `src/app/globals.css` (full rewrite)
+- `src/lib/utils.ts` (new, cn() utility)
+- `src/components/ThemeProvider.tsx` (added .dark class toggle)
+- `src/components/ui/*.tsx` (16 new shadcn components)
+- `AGENT_INSTRUCTION.md` (updated conventions)
+- `UI_GUIDE.md` (new, design system reference)
+
+## 2026-02-18 — Claude (Opus) — UI Redesign Phase 3-5 (Shell + Page Rebuild + Cleanup) — COMPLETE
+
+### Summary
+Completed the full CSS Modules → Tailwind v4 migration. Every component now uses Tailwind utility classes exclusively. Zero `.module.css` files remain. Zero `data-theme` selectors remain. Zero inline style objects remain. Build: 54 pages, 0 errors.
+
+### Phase 3: Shell Rebuild
+- Rewrote `Navigation.tsx`: replaced 243-line CSS module with Tailwind classes + shadcn `DropdownMenu`
+- Updated `layout.tsx`: footer and main content wrapper → Tailwind classes
+- Deleted `Navigation.module.css`
+
+### Phase 4: Page Rebuild (all components)
+- **WikiArticle.tsx + SidebarToC.tsx**: CSS module → Tailwind. Moved `:global()` namu-wiki heading styles to `globals.css` as plain classes (`.namu-wiki-heading`, `.namu-wiki-num`, `.namu-wiki-content-wrapper`, `.namu-wiki-text`, `.namu-wiki-toggle`, `.wiki-section-body`). `styles.sectionBody` → `'wiki-section-body'` plain string for runtime DOM manipulation in SidebarToC.
+- **CommunityClient.tsx**: Added `CAT_STYLES` map using Tailwind `dark:` variants for category badge colors (replaces `[data-theme='dark']` CSS selectors)
+- **CommunityDetailClient.tsx**: Same `CAT_STYLES` pattern, vote buttons with `cn()` conditional classes
+- **GuideExplorer.tsx + ExchangeRateWidget.tsx**: Full Tailwind rewrite of 3-column docs grid layout
+- **WikiEditorForm.tsx**: Form inputs → shared `inputClass` string + Tailwind
+- **NewCommunityPostForm.tsx**: Same pattern as WikiEditorForm
+- **AdBanner.tsx**: `SLOT_SIZE` map for Tailwind width/height, `cn()` composition
+- **Login page.tsx**: All 7 inline `CSSProperties` objects removed → Tailwind classes + `cn()` for mode toggle
+- Deleted all 7 `.module.css` files: `WikiArticle`, `AdBanner`, `guide`, `wiki-editor`, `community`, `detail`, `new`
+
+### Phase 5: Cleanup
+- **WikiIndexClient.tsx**: Last remaining inline-style component → full Tailwind rewrite. Badge pills now use `bg-badge-*` theme tokens directly.
+- **WikiArticle.tsx badges**: `badge badge-transport` global class → `inline-block py-0.5 px-2.5 rounded-full ... bg-badge-transport`
+- **ThemeProvider.tsx**: Removed `root.setAttribute('data-theme', t)` — only `.dark` class toggle remains
+- **globals.css**: Removed all 3 `[data-theme="dark"]` selectors. Deleted entire legacy variable bridge (~90 lines of `--color-bg-*`, `--color-text-*`, `--font-size-*`, `--spacing-*`, `--border-radius-*`, `--shadow-*`, `--transition-*` etc). Deleted Section 7 legacy layout classes (`.main-content`, `.container`, `.badge`, `.badge-*`).
+- **Kept**: `--nav-height: 56px` and `--ad-banner-height: 106px` in `:root` (still used in `calc()` expressions across multiple components for sticky positioning and scroll-margin-top).
+
+### Design Token Architecture (final state for CODEX reference)
+
+**globals.css structure:**
+1. Tailwind v4 imports (`tailwindcss`, `tw-animate-css`, `shadcn/tailwind.css`)
+2. `@custom-variant dark (&:is(.dark *))` — Tailwind dark mode via `.dark` class
+3. `@theme` block — fonts + badge colors (`--color-badge-transport` etc.)
+4. `@theme inline` block — shadcn radius + color mapping (`--color-background: var(--background)` etc.)
+5. `:root` — light mode shadcn tokens (`--background`, `--foreground`, `--primary: #854d27`, etc.)
+6. `.dark` — dark mode shadcn tokens (`--primary: #5b82c4`, etc.)
+7. `:root` — layout tokens (`--nav-height`, `--ad-banner-height`)
+8. `@layer base` — html/body, `.wiki-content` typography, `del` convention, focus/selection/scrollbar
+9. Reduced motion media query
+10. `.dark img` dimming
+11. `.namu-wiki-*` heading interaction classes + `.wiki-section-body`
+
+**Color system:**
+- Light primary: `#854d27` (warm brown)
+- Dark primary: `#5b82c4` (steel blue)
+- Background: `#f5f6f7` light / `#000000` dark
+- Card/surface: `#ffffff` light / `#161616` dark
+- Border: `#e4e0dd` light / `#2a2a2a` dark
+
+**Pattern conventions CODEX must follow:**
+- Use `cn()` from `@/lib/utils` for conditional classes (not ternary string concatenation)
+- Card backgrounds: `bg-card dark:bg-surface`
+- Nav/footer backgrounds: `bg-card dark:bg-background`
+- Inputs: `border border-border rounded-sm bg-background text-foreground font-sans py-2.5 px-3`
+- Primary buttons: `bg-primary text-primary-foreground`
+- Responsive: use `max-lg:`, `max-md:`, `max-[860px]:`, `max-[480px]:` (mobile-last approach)
+- Dark mode: Tailwind `dark:` variant only (no `data-theme`, no separate dark selectors)
+- Category badge colors: use `CAT_STYLES` maps with `dark:` variant classes (see CommunityClient.tsx pattern)
+- Wiki category badges: use `bg-badge-*` theme tokens (defined in `@theme` block)
+
+### What CODEX should NOT change during ARCHITECTURE_FINAL work
+- `globals.css` Sections 1-7 (design tokens, base styles, namu-wiki classes) — stable and complete
+- Component className patterns — all use Tailwind now, no CSS modules to worry about
+- `ThemeProvider.tsx` — only toggles `.dark` class, no `data-theme`
+- `parseWikiContent` output — generates `.namu-wiki-*` class names that match globals.css
+- `SidebarToC.tsx` — uses `'wiki-section-body'` plain string class for DOM manipulation
+
+### What CODEX WILL add (from ARCHITECTURE_FINAL.md)
+- New pages: `/admin/*` routes (dashboard, users, moderation, tags, settings)
+- New components: CodeMirror editor, revision history, report flow, upload UI
+- New DB tables: `user_profiles`, `wiki_revisions`, `revision_votes`, `reports`, `tags`, `media_uploads`
+- Search: FTS + trigram on `wiki_articles`
+- These additions should use the established Tailwind patterns above, NOT introduce new CSS modules or inline styles
+
+### Files changed this session
+- `src/components/Navigation.tsx` (rewritten)
+- `src/components/Navigation.module.css` (deleted)
+- `src/app/layout.tsx` (footer/main Tailwind)
+- `src/components/WikiArticle.tsx` (rewritten)
+- `src/components/WikiArticle.module.css` (deleted)
+- `src/components/SidebarToC.tsx` (rewritten)
+- `src/components/AdBanner.tsx` (rewritten)
+- `src/components/AdBanner.module.css` (deleted)
+- `src/components/ThemeProvider.tsx` (removed data-theme)
+- `src/app/guide/GuideExplorer.tsx` (rewritten)
+- `src/app/guide/ExchangeRateWidget.tsx` (rewritten)
+- `src/app/guide/guide.module.css` (deleted)
+- `src/app/wiki/WikiEditorForm.tsx` (rewritten)
+- `src/app/wiki/wiki-editor.module.css` (deleted)
+- `src/app/wiki/WikiIndexClient.tsx` (rewritten)
+- `src/app/community/CommunityClient.tsx` (rewritten)
+- `src/app/community/community.module.css` (deleted)
+- `src/app/community/[id]/CommunityDetailClient.tsx` (rewritten)
+- `src/app/community/[id]/detail.module.css` (deleted)
+- `src/app/community/new/NewCommunityPostForm.tsx` (rewritten)
+- `src/app/community/new/new.module.css` (deleted)
+- `src/app/login/page.tsx` (rewritten)
+- `src/app/globals.css` (legacy bridge removed, [data-theme] removed)
+- `src/lib/utils.ts` (unchanged, created in Phase 1+2)
+
+## 2026-02-18 — Codex (GPT-5) — Architecture rollout kickoff (DB + API start)
+
+- Reviewed Opus UI renewal logs and validated no direct conflict with frozen architecture decisions
+- Updated `ARCHITECTURE_FINAL.md` with:
+  - UI conflict-check section
+  - execution board (AX-* tickets with dependency graph)
+  - detailed ticket templates/status notes
+- Added migration batch 1: `2026-02-18-architecture-final-batch-1.sql`
+  - user_profiles, wiki_revisions, revision_votes, reports, media_uploads, site_settings, wiki FTS base + RLS/policies
+- Added migration batch 2: `2026-02-18-architecture-final-batch-2-tags.sql`
+  - tags, tag_aliases, wiki_article_tags + RLS/policies
+- Added migration batch 3: `2026-02-18-architecture-final-batch-3-backfill.sql`
+  - idempotent backfill for initial revisions + normalized tags + search vector fill
+- Started AX-BE-001 implementation:
+  - Added `src/lib/user-profiles.ts` profile bootstrap helper
+  - Updated wiki create/update APIs to append revisions and apply trust/role pending-vs-active gate
+- Build verified after changes: 54 routes generated, TypeScript pass
+
+## 2026-02-18 — Codex (GPT-5) — AX-BE-002 optimistic locking implementation
+
+- Added optimistic-lock payload contract on wiki edit flow:
+  - Edit page fetches latest revision number and passes `baseRevisionNumber` into editor initial state
+  - Editor PATCH payload now includes `baseRevisionNumber`
+- Updated `PATCH /api/v1/wiki/articles/[slug]`:
+  - validates `baseRevisionNumber`
+  - compares against latest stored revision number
+  - returns `409` with `currentRevisionNumber` when stale
+- Added conflict-aware client error messaging for edit form (reload/merge guidance)
+- Build verified after changes: 54 routes generated, TypeScript pass
+
+## 2026-02-18 — Codex (GPT-5) — AX-BE-003 reports/moderation API rollout
+
+- Added report routes:
+  - `POST/GET /api/v1/reports` for creation and scoped listing (`mine` / `all` for staff)
+  - `PATCH /api/v1/reports/[id]` for moderator/admin status resolution
+- Added user-profile role helper exports in `src/lib/user-profiles.ts` (`getUserProfile`, `isStaffRole`)
+- Enforced explicit staff-role checks in API layer because service-role client bypasses RLS
+- Build verified after changes: 55 routes generated, TypeScript pass
+
+## 2026-02-18 — Codex (GPT-5) — AX-BE-004 upload API rollout
+
+- Added upload routes:
+  - `POST /api/v1/uploads` (auth required, MIME allowlist, 5MB cap, daily quota, storage upload + metadata insert)
+  - `PATCH /api/v1/uploads/[id]` (owner/staff status updates: `removed`, `blocked`; `blocked` staff-only)
+- Uses Supabase Storage bucket `community-media` and DB table `media_uploads`
+- Added explicit role checks in API layer for moderation-style upload status changes
+- Build verified after changes: 56 routes generated, TypeScript pass
+
+## 2026-02-18 — Codex (GPT-5) — AX-BE-005 search API rollout (partial)
+
+- Added `GET /api/v1/wiki/search` route
+- Implemented ranking heuristic:
+  - title exact > title prefix > title like
+  - FTS blend on `search_vector` (`english` + `simple`)
+  - summary match boost + freshness bonus
+- Endpoint returns scored result list for suggestion/results UI integration
+- Remaining for full ticket close: trigram-weight tuning + staging latency measurement
+- Build verified after changes: 57 routes generated, TypeScript pass
+
+## 2026-02-18 — Codex (GPT-5) — AX-BE-006 emergency lock + write guards
+
+- Added admin settings route: `GET/PATCH /api/v1/admin/settings/emergency-lock` (admin-only)
+- Added shared guard helper: `src/lib/emergency-lock.ts`
+- Applied emergency write lock checks to key mutable routes:
+  - wiki create/update
+  - reports create/update
+  - uploads create/update
+  - community post create/delete, comments create, post/comment votes
+- Build verified after changes: 58 routes generated, TypeScript pass
+
+## 2026-02-18 — Codex (GPT-5) — AX-SEC-001 RLS/policy hardening
+
+- Added DB security migration:
+  - `supabase/migrations/2026-02-18-architecture-final-batch-4-security-hardening.sql`
+- Hardened legacy permissive policy surface:
+  - removed broad authenticated write policies on `wiki_articles`
+  - added staff-only direct insert/update policies for `wiki_articles`
+  - removed `user_profiles` self-update policy path (privilege escalation risk)
+- Replaced hardcoded admin-email auth in community delete API with profile role-based admin check
+- Build verified after changes: 58 routes generated, TypeScript pass
+
+## 2026-02-18 — Codex (GPT-5) — AX-SEC-002 dual-layer rate limiting
+
+- Added edge-layer throttling with Next.js 16 proxy convention:
+  - `src/proxy.ts` (route+method IP buckets, 429 with retry headers)
+- Added server-layer write throttle helper:
+  - `src/lib/write-rate-limit.ts` (DB action-count checks on recent window)
+- Integrated server-side limits into major write routes:
+  - wiki write, reports create, community post create, comment create, uploads create
+- Kept emergency lock independent and active for write-stop scenarios
+- Build verified after changes: 62 routes generated, TypeScript pass
+
+## 2026-02-18 — Codex (GPT-5) — AX-BE-005 search ranking finalization
+
+- Added search ranking RPC migration:
+  - `supabase/migrations/2026-02-18-architecture-final-batch-5-search-rpc.sql`
+  - `search_wiki_advanced(query, max_results)` implements FTS+trigram+freshness weighting
+- Updated `GET /api/v1/wiki/search` to call RPC instead of local in-route heuristic
+- Preserved title exact/prefix priority and returned ranking reasons for UI display
+- Build verified after changes: 62 routes generated, TypeScript pass
+
+## 2026-02-18 — Codex (GPT-5) — AX-DOC-001 complete + AX-OPS-002 runbook start
+
+- Synced architecture docs with Tailwind/shadcn reality:
+  - `MASTERPLAN.md` styling stack, dark-mode rule, and quick coding rule updated
+  - `AGENT_INSTRUCTION.md` removed stale `data-theme` bridge guidance
+- Made security migration rerunnable:
+  - `supabase/migrations/2026-02-18-architecture-final-batch-4-security-hardening.sql`
+  - added `drop policy if exists` for already-created staff policies
+- Added operations runbook:
+  - `OPERATIONS_PLAYBOOK.md` with backup/PITR weekly checklist, recovery steps, drill scenarios, evidence template
+- Updated `ARCHITECTURE_FINAL.md` execution board:
+  - AX-DOC-001 -> `done`
+  - AX-OPS-002 -> `in_progress`
+
+## 2026-02-18 — Codex (GPT-5) — AX-QA-001 gate definition + AX-BE-001 close
+
+- Added `QA_RELEASE_GATE.md`:
+  - frozen decision compliance checks (`Q-001`..`Q-006`)
+  - security gate checks (`S-001`..`S-003`)
+  - SQL verification queries and sign-off template
+- Re-validated wiki public read path uses `wiki_articles` and does not expose pending revisions.
+- Updated `ARCHITECTURE_FINAL.md`:
+  - AX-BE-001 status -> `done`
+  - AX-QA-001 status -> `in_progress` (checklist ready, staging run pending)
+
+## 2026-02-18 — Codex (GPT-5) — AX-QA-001 evidence run (local)
+
+- Added `QA_RUN_2026-02-18.md` with code-level evidence for Q-001..Q-006 and S-001..S-003.
+- Marked current gate decision as `NOT READY` until staging runtime validation is completed.
+- Explicitly captured Q-005 (account deletion policy) as blocked/pending feature delivery.
+- Updated `ARCHITECTURE_FINAL.md` AX-QA-001 delivered section with evidence-run artifact.
+
+## 2026-02-18 — Codex (GPT-5) — Pending revision moderation endpoint
+
+- Fixed profile dropdown overlap issue by raising menu z-index:
+  - `src/components/Navigation.tsx` (`DropdownMenuContent` now uses `z-[200]`)
+- Added staff-only wiki revision moderation route:
+  - `PATCH /api/v1/wiki/revisions/[id]`
+  - actions: `approve`, `reject`, `hide`
+- `approve` now promotes pending revision and applies revision content to `wiki_articles`.
+- Updated `ARCHITECTURE_FINAL.md` AX-BE-003 delivered details accordingly.
+- Build verified after changes: 64 routes generated (new revision moderation route included).
+
+## 2026-02-18 — Codex (GPT-5) — Account soft-delete flow (frozen decision #5 progress)
+
+- Added account deletion endpoint:
+  - `POST /api/v1/account/delete` (`confirm=true` required)
+  - marks `user_profiles.deleted_at` and anonymizes display name to `Deleted User`
+- Added deleted/banned write guard utility in `src/lib/user-profiles.ts`:
+  - `assertProfileWritable`, `DeletedAccountError`, `BannedAccountError`
+- Enforced deleted/banned checks in identity bridge:
+  - `src/lib/community-auth-user.ts` now validates mapped profile state before returning actor id
+- Added sign-in gate in `src/auth.ts`:
+  - blocks login for soft-deleted or currently banned identities (when linked profile exists)
+- Build verified after changes: 64 routes generated, TypeScript pass.
+
+## 2026-02-18 — Codex (GPT-5) — AX-OPS-001 observability wiring (partial)
+
+- Installed observability dependencies:
+  - `@sentry/nextjs`, `@vercel/analytics`
+- Added Sentry integration files:
+  - `next.config.ts` (`withSentryConfig`)
+  - `src/instrumentation.ts`
+  - `src/instrumentation-client.ts` (includes router transition hook)
+  - `sentry.server.config.ts`, `sentry.edge.config.ts`
+  - `src/app/global-error.tsx` with `Sentry.captureException`
+- Added Vercel Analytics component to root layout (`src/app/layout.tsx`)
+- Updated `.env.example` with Sentry variables (`SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ORG`, `SENTRY_PROJECT`, `SENTRY_AUTH_TOKEN`)
+- Build verified after changes: 64 routes generated, TypeScript pass.
+
+## 2026-02-18 — Codex (GPT-5) — AX-OPS-001 verification accelerators
+
+- Added admin-only Sentry verification endpoint:
+  - `POST /api/v1/admin/ops/sentry-test` (returns `eventId`)
+- Added ops KPI views migration:
+  - `supabase/migrations/2026-02-18-architecture-final-batch-6-ops-kpi.sql`
+  - views: `ops_kpi_daily`, `ops_kpi_realtime`
+- Updated `OPERATIONS_PLAYBOOK.md` with fast verification steps for env setup, Sentry event check, and KPI SQL checks.

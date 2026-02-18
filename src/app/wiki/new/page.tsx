@@ -18,6 +18,7 @@ export default async function NewWikiArticlePage() {
         content: '',
         tagsText: '',
         relatedArticlesText: '',
+        baseRevisionNumber: 0,
       }}
     />
   );

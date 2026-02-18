@@ -2,6 +2,7 @@ import { NextResponse } from 'next/server';
 import { auth } from '@/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
 import { ensureCommunityAuthUser } from '@/lib/community-auth-user';
+import { assertWritesAllowed, EmergencyLockError } from '@/lib/emergency-lock';
 
 type VoteRouteContext = {
   params: Promise<{ id: string }>;
@@ -50,6 +51,7 @@ export async function POST(_request: Request, context: VoteRouteContext) {
   }
 
   try {
+    await assertWritesAllowed();
     const supabaseUserId = await ensureCommunityAuthUser(session);
 
     const { error: insertError } = await supabaseAdmin.from('votes').insert({
@@ -64,6 +66,9 @@ export async function POST(_request: Request, context: VoteRouteContext) {
     const upvotes = await recalculatePostVotes(postId);
     return NextResponse.json({ upvotes, voted: true });
   } catch (error) {
+    if (error instanceof EmergencyLockError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }
@@ -82,6 +87,7 @@ export async function DELETE(_request: Request, context: VoteRouteContext) {
   }
 
   try {
+    await assertWritesAllowed();
     const supabaseUserId = await ensureCommunityAuthUser(session);
 
     const { error: deleteError } = await supabaseAdmin
@@ -97,6 +103,9 @@ export async function DELETE(_request: Request, context: VoteRouteContext) {
     const upvotes = await recalculatePostVotes(postId);
     return NextResponse.json({ upvotes, voted: false });
   } catch (error) {
+    if (error instanceof EmergencyLockError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
+    }
     const message = error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json({ error: message }, { status: 500 });
   }

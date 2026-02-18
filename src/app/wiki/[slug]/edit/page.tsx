@@ -18,13 +18,21 @@ export default async function EditWikiArticlePage({ params }: Props) {
   const { slug } = await params;
   const { data } = await supabase
     .from('wiki_articles')
-    .select('slug, title, category, summary, content, tags, related_articles')
+    .select('id, slug, title, category, summary, content, tags, related_articles')
     .eq('slug', slug)
     .single();
 
   if (!data) {
     notFound();
   }
+
+  const { data: latestRevision } = await supabase
+    .from('wiki_revisions')
+    .select('revision_number')
+    .eq('article_id', data.id)
+    .order('revision_number', { ascending: false })
+    .limit(1)
+    .maybeSingle<{ revision_number: number }>();
 
   return (
     <WikiEditorForm
@@ -37,6 +45,7 @@ export default async function EditWikiArticlePage({ params }: Props) {
         content: data.content,
         tagsText: (data.tags ?? []).join(', '),
         relatedArticlesText: (data.related_articles ?? []).join(', '),
+        baseRevisionNumber: latestRevision?.revision_number ?? 0,
       }}
     />
   );

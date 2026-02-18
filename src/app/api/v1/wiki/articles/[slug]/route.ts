@@ -1,6 +1,11 @@
 import { NextResponse } from 'next/server';
+import { createHash } from 'crypto';
 import { auth } from '@/auth';
 import { supabaseAdmin } from '@/lib/supabase-admin';
+import { ensureCommunityAuthUser } from '@/lib/community-auth-user';
+import { ensureUserProfile } from '@/lib/user-profiles';
+import { assertWritesAllowed, EmergencyLockError } from '@/lib/emergency-lock';
+import { assertWriteRateLimit, WriteRateLimitError } from '@/lib/write-rate-limit';
 import { isValidWikiCategory, slugifyWikiTitle } from '@/lib/wiki-utils';
 
 type WikiRouteContext = {
@@ -14,6 +19,7 @@ type UpdateWikiBody = {
   content?: unknown;
   tags?: unknown;
   relatedArticles?: unknown;
+  baseRevisionNumber?: unknown;
 };
 
 export async function PATCH(request: Request, context: WikiRouteContext) {
@@ -44,6 +50,9 @@ export async function PATCH(request: Request, context: WikiRouteContext) {
   const relatedArticles = Array.isArray(body.relatedArticles)
     ? body.relatedArticles.filter((item): item is string => typeof item === 'string').map((item) => item.trim()).filter(Boolean).slice(0, 30)
     : [];
+  const baseRevisionNumber = typeof body.baseRevisionNumber === 'number' && Number.isInteger(body.baseRevisionNumber)
+    ? body.baseRevisionNumber
+    : null;
 
   if (!title || title.length > 120) {
     return NextResponse.json({ error: 'Title is required and must be 120 characters or less.' }, { status: 400 });
@@ -57,38 +66,136 @@ export async function PATCH(request: Request, context: WikiRouteContext) {
   if (!content || content.length > 40000) {
     return NextResponse.json({ error: 'Content is required and must be 40000 characters or less.' }, { status: 400 });
   }
+  if (baseRevisionNumber === null || baseRevisionNumber < 0) {
+    return NextResponse.json({ error: 'baseRevisionNumber is required for optimistic locking.' }, { status: 400 });
+  }
 
   const newSlug = slugifyWikiTitle(title);
   if (!newSlug) {
     return NextResponse.json({ error: 'Could not generate a valid slug from title.' }, { status: 400 });
   }
 
-  const { data, error } = await supabaseAdmin
-    .from('wiki_articles')
-    .update({
-      slug: newSlug,
-      title,
-      category,
-      summary,
-      content,
-      tags,
-      related_articles: relatedArticles,
-      last_updated: new Date().toISOString().slice(0, 10),
-    })
-    .eq('slug', slug)
-    .select('slug')
-    .single();
-
-  if (error) {
-    if (error.code === '23505') {
-      return NextResponse.json({ error: 'An article with that slug already exists.' }, { status: 409 });
+  try {
+    await assertWritesAllowed();
+  } catch (error) {
+    if (error instanceof EmergencyLockError) {
+      return NextResponse.json({ error: error.message }, { status: 503 });
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 
-  if (!data) {
-    return NextResponse.json({ error: 'Article not found.' }, { status: 404 });
-  }
+  try {
+    const actorId = await ensureCommunityAuthUser(session);
+    await assertWriteRateLimit({
+      table: 'wiki_revisions',
+      actorColumn: 'author_id',
+      actorId,
+      windowSec: 600,
+      max: 10,
+    });
+    const profile = await ensureUserProfile({
+      userId: actorId,
+      preferredUsername: session.user?.email?.split('@')[0] ?? session.user?.name ?? null,
+      displayName: session.user?.name ?? null,
+    });
 
-  return NextResponse.json({ slug: data.slug });
+    const { data: article, error: articleError } = await supabaseAdmin
+      .from('wiki_articles')
+      .select('id, slug')
+      .eq('slug', slug)
+      .maybeSingle<{ id: number; slug: string }>();
+
+    if (articleError) {
+      return NextResponse.json({ error: articleError.message }, { status: 500 });
+    }
+    if (!article) {
+      return NextResponse.json({ error: 'Article not found.' }, { status: 404 });
+    }
+
+    const { data: revisionRow, error: revisionLookupError } = await supabaseAdmin
+      .from('wiki_revisions')
+      .select('revision_number')
+      .eq('article_id', article.id)
+      .order('revision_number', { ascending: false })
+      .limit(1)
+      .maybeSingle<{ revision_number: number }>();
+
+    if (revisionLookupError) {
+      return NextResponse.json({ error: revisionLookupError.message }, { status: 500 });
+    }
+
+    const currentRevisionNumber = revisionRow?.revision_number ?? 0;
+    if (baseRevisionNumber !== currentRevisionNumber) {
+      return NextResponse.json({
+        error: 'Revision conflict: document has changed since you opened the editor.',
+        currentRevisionNumber,
+      }, { status: 409 });
+    }
+
+    const nextRevisionNumber = currentRevisionNumber + 1;
+    const isActive = profile.role === 'admin' || profile.role === 'moderator' || profile.trust_score >= 10;
+    const revisionStatus = isActive ? 'active' : 'pending';
+
+    const { error: revisionInsertError } = await supabaseAdmin
+      .from('wiki_revisions')
+      .insert({
+        article_id: article.id,
+        revision_number: nextRevisionNumber,
+        content,
+        content_hash: createHash('sha256').update(content).digest('hex'),
+        summary: 'Wiki article update',
+        author_id: actorId,
+        author_name: session.user?.name ?? session.user?.email ?? actorId,
+        status: revisionStatus,
+      });
+
+    if (revisionInsertError) {
+      return NextResponse.json({ error: revisionInsertError.message }, { status: 500 });
+    }
+
+    if (!isActive) {
+      return NextResponse.json({
+        slug: article.slug,
+        revisionNumber: nextRevisionNumber,
+        status: 'pending',
+        message: 'Revision submitted for moderation review.',
+      });
+    }
+
+    const { data: updated, error: updateError } = await supabaseAdmin
+      .from('wiki_articles')
+      .update({
+        slug: newSlug,
+        title,
+        category,
+        summary,
+        content,
+        tags,
+        related_articles: relatedArticles,
+        last_updated: new Date().toISOString().slice(0, 10),
+      })
+      .eq('id', article.id)
+      .select('slug')
+      .single<{ slug: string }>();
+
+    if (updateError) {
+      if (updateError.code === '23505') {
+        return NextResponse.json({ error: 'An article with that slug already exists.' }, { status: 409 });
+      }
+      return NextResponse.json({ error: updateError.message }, { status: 500 });
+    }
+
+    return NextResponse.json({
+      slug: updated.slug,
+      revisionNumber: nextRevisionNumber,
+      status: 'active',
+    });
+  } catch (error) {
+    if (error instanceof WriteRateLimitError) {
+      return NextResponse.json({ error: error.message }, { status: 429 });
+    }
+    const message = error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
 }

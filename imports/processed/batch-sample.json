@@ -1,0 +1,24 @@
+[
+    {
+        "slug": "bulk-import-test",
+        "title": "Bulk Import Test",
+        "category": "Practical",
+        "summary": "This is a test article to verify the bulk import pipeline.",
+        "infobox": {
+            "Status": "Test",
+            "Source": "JSON Import",
+            "Date": "2026-02-18"
+        },
+        "content": "<h2>Test Successful</h2><p>If you can read this, the bulk import pipeline is working correctly. <del>This article should probably be deleted later.</del></p>",
+        "relatedArticles": [
+            "soju",
+            "hangang-parks"
+        ],
+        "tags": [
+            "test",
+            "meta",
+            "dev"
+        ],
+        "lastUpdated": "2026-02-18"
+    }
+]
